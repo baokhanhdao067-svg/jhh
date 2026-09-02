@@ -1,0 +1,118 @@
+-- [[ ADVANCED SCRIPT LOADER & UTILITIES HUB ]] --
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "✨ Premium Clover Hub | Steal An Egg",
+   LoadingTitle = "Đang khởi tạo hệ thống...",
+   LoadingSubtitle = "by Napun87 (Enhanced Edition)",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "CloverHubConfig",
+      FileName = "MainConfig"
+   },
+   Discord = {
+      Enabled = false,
+      Invite = "",
+      RememberJoins = true
+   },
+   KeySystem = false
+})
+
+-- Notification Khởi động
+Rayfield:Notify({
+   Title = "Hệ thống sẵn sàng!",
+   Content = "Đã nạp thành công Clover Hub phiên bản tối ưu.",
+   Duration = 5,
+   Image = 4483362458,
+   Actions = {
+      Ignore = {
+         Name = "OK",
+         Callback = function() end
+      }
+   }
+})
+
+-- Tab 1: Script Gốc (Main Script)
+local MainTab = Window:CreateTab("📜 Script Chính", 4483362458)
+
+MainTab:CreateButton({
+   Name = "🚀 Chạy Clover.lua (Gốc)",
+   Callback = function()
+       task.spawn(function()
+           local success, err = pcall(function()
+               loadstring(game:HttpGet("https://raw.githubusercontent.com/napun87/stealanegg/refs/heads/main/clover.lua"))()
+           end)
+           if success then
+               Rayfield:Notify({Title = "Thành công", Content = "Đã kích hoạt Clover.lua!", Duration = 3})
+           else
+               Rayfield:Notify({Title = "Lỗi", Content = "Không thể tải Script: " .. tostring(err), Duration = 5})
+           end
+       end)
+   end,
+})
+
+-- Tab 2: Tính Năng Hỗ Trợ (Utilities)
+local UtilTab = Window:CreateTab("🛠️ Tiện Ích Tối Ưu", 4483362458)
+
+-- Anti-AFK
+local AntiAFKEnabled = false
+UtilTab:CreateToggle({
+   Name = "🛡️ Chống Treo Máy (Anti-AFK)",
+   CurrentValue = true,
+   Flag = "AntiAFKToggle",
+   Callback = function(Value)
+       AntiAFKEnabled = Value
+       if AntiAFKEnabled then
+           local VirtualUser = game:GetService("VirtualUser")
+           game:GetService("Players").LocalPlayer.Idled:Connect(function()
+               if AntiAFKEnabled then
+                   VirtualUser:CaptureController()
+                   VirtualUser:ClickButton2(Vector2.new(0, 0))
+                   Rayfield:Notify({Title = "Anti-AFK", Content = "Đã ngăn người chơi bị ngắt kết nối!", Duration = 2})
+               end
+           end)
+       end
+   end,
+})
+
+-- Tối ưu hóa FPS (Anti-Lag)
+UtilTab:CreateButton({
+   Name = "⚡ Giảm Lag (Boost FPS)",
+   Callback = function()
+       for _, v in pairs(game:GetService("Workspace"):GetDescendants()) do
+           if v:IsA("BasePart") and not v:IsA("MeshPart") then
+               v.Material = Enum.Material.SmoothPlastic
+           elseif v:IsA("Decal") or v:IsA("Texture") then
+               v:Destroy()
+           end
+       end
+       Rayfield:Notify({Title = "Tối Ưu", Content = "Đã dọn dẹp kết cấu bề mặt để tăng FPS!", Duration = 3})
+   end,
+})
+
+-- Chỉnh Tốc độ Di chuyển
+UtilTab:CreateSlider({
+   Name = "🏃 Tốc độ Di chuyển (WalkSpeed)",
+   Range = {16, 200},
+   Increment = 1,
+   Suffix = "Speed",
+   CurrentValue = 16,
+   Flag = "SpeedSlider",
+   Callback = function(Value)
+       game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+   end,
+})
+
+-- Chỉnh Độ cao Nhảy
+UtilTab:CreateSlider({
+   Name = "🦘 Độ cao Nhảy (JumpPower)",
+   Range = {50, 300},
+   Increment = 5,
+   Suffix = "Power",
+   CurrentValue = 50,
+   Flag = "JumpSlider",
+   Callback = function(Value)
+       game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+   end,
+})

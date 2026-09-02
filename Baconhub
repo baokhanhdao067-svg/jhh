@@ -1,0 +1,77 @@
+-- [[ BACON HUB - SCRIPT EXECUTION ]] --
+local Rayfield = pcall(function() end) -- Khung cấu trúc Bacon Hub
+
+local function Notification(title, text)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = 3
+    })
+end
+
+Notification("Bacon Hub", "Đang tải script và kích hoạt các tính năng...")
+
+-- Tải script gốc (Clover Script)
+task.spawn(function()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/napun87/stealanegg/refs/heads/main/clover.lua"))()
+    end)
+    if not success then
+        warn("[Bacon Hub Error]: " .. tostring(err))
+    end
+end)
+
+-- [[ CHỨC NĂNG FIX LAG / FPS BOOSTER ]] --
+local function FixLag()
+    local Workspace = game:GetService("Workspace")
+    local Lighting = game:GetService("Lighting")
+    local Terrain = Workspace:FindFirstChildOfClass("Terrain")
+
+    -- Tối ưu hóa Lighting
+    Lighting.GlobalShadows = false
+    Lighting.FogEnd = 9e9
+    Lighting.Brightness = 1
+
+    for _, v in pairs(Lighting:GetChildren()) do
+        if v:IsA("PostEffect") or v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") then
+            v.Enabled = false
+        end
+    end
+
+    -- Tối ưu hóa Terrain
+    if Terrain then
+        Terrain.WaterWaveSize = 0
+        Terrain.WaterWaveSpeed = 0
+        Terrain.WaterReflectance = 0
+        Terrain.WaterTransparency = 0
+    end
+
+    -- Giảm chi tiết Texture & Material của các Part
+    for _, obj in pairs(game:GetDescendants()) do
+        if obj:IsA("BasePart") then
+            obj.Material = Enum.Material.SmoothPlastic
+            obj.Reflectance = 0
+        elseif obj:IsA("Decal") or obj:IsA("Texture") then
+            obj:Destroy()
+        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire") then
+            obj.Enabled = false
+        end
+    end
+
+    -- Tự động tối ưu các Part mới tạo trong game
+    game.DescendantAdded:Connect(function(obj)
+        if obj:IsA("BasePart") then
+            obj.Material = Enum.Material.SmoothPlastic
+            obj.Reflectance = 0
+        elseif obj:IsA("Decal") or obj:IsA("Texture") then
+            obj:Destroy()
+        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+            obj.Enabled = false
+        end
+    end)
+
+    Notification("Bacon Hub", "Đã kích hoạt Fix Lag thành công! FPS đã được tối ưu.")
+end
+
+-- Tự động chạy Fix Lag
+FixLag()

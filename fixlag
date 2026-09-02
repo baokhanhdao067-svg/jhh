@@ -1,0 +1,224 @@
+-- Khanh Dz Ultra Optimization & Anti-Lag System (For Low-End Devices / Delta Mobile)
+local P, L, U, R = game:GetService("Players"), game:GetService("Lighting"), game:GetService("UserInputService"), game:GetService("RunService")
+local LP = P.LocalPlayer
+local Stats = game:GetService("Stats")
+
+local Settings = {
+    UltraLagFix = false,
+    NoShadows = false,
+    NoParticles = false,
+    NoTextures = false,
+    LowResMesh = false,
+    AFKMode = false,
+    CapFPS = 60
+}
+
+local lastInput, isAFK = os.time(), false
+
+-- Safe Set FPS Cap for Delta Mobile
+local function setFPS(cap)
+    pcall(function()
+        if setfpscap then
+            setfpscap(cap)
+        elseif setbackbufferfps then
+            setbackbufferfps(cap)
+        end
+    end)
+end
+
+-- ScreenGui Setup (GUI Protection for Delta Mobile)
+local Gui = Instance.new("ScreenGui")
+Gui.Name = "KhanhDz_UltraFixLag"
+Gui.ResetOnSpawn = false
+
+pcall(function()
+    if gethui then
+        Gui.Parent = gethui()
+    elseif syn and syn.protect_gui then
+        syn.protect_gui(Gui)
+        Gui.Parent = game:GetService("CoreGui")
+    else
+        Gui.Parent = game:GetService("CoreGui")
+    end
+end)
+if not Gui.Parent then Gui.Parent = LP:WaitForChild("PlayerGui") end
+
+-- Nút Bật/Tắt Menu (Draggable ImageButton)
+local TBtn = Instance.new("ImageButton", Gui)
+TBtn.Size, TBtn.Position, TBtn.BackgroundColor3 = UDim2.new(0,50,0,50), UDim2.new(0,15,0,150), Color3.fromRGB(30,30,30)
+TBtn.Image, TBtn.Active, TBtn.Draggable = "rbxassetid://6031097225", true, true
+Instance.new("UICorner", TBtn).CornerRadius = UDim.new(1,0)
+
+local TBtnStroke = Instance.new("UIStroke", TBtn)
+TBtnStroke.Color, TBtnStroke.Thickness = Color3.fromRGB(0,255,150), 2
+
+-- Khung Menu Chính
+local Main = Instance.new("Frame", Gui)
+Main.Size, Main.Position, Main.BackgroundColor3 = UDim2.new(0,250,0,380), UDim2.new(0,75,0,150), Color3.fromRGB(15,15,15)
+Main.Active, Main.Draggable, Main.Visible = true, true, false
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0,10)
+
+local MainStroke = Instance.new("UIStroke", Main)
+MainStroke.Color, MainStroke.Thickness = Color3.fromRGB(0,255,150), 1.5
+
+local Title = Instance.new("TextLabel", Main)
+Title.Size, Title.Text, Title.TextColor3, Title.Font = UDim2.new(1,0,0,40), "KHANH DZ - FIX LAG VIP", Color3.fromRGB(0,255,150), Enum.Font.GothamBold
+Title.BackgroundTransparency, Title.TextSize = 1, 15
+
+TBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
+
+local Scroll = Instance.new("ScrollingFrame", Main)
+Scroll.Size, Scroll.Position, Scroll.CanvasSize = UDim2.new(1,-10,1,-45), UDim2.new(0,5,0,40), UDim2.new(0,0,0,360)
+Scroll.BackgroundTransparency, Scroll.ScrollBarThickness = 1, 3
+local Layout = Instance.new("UIListLayout", Scroll)
+Layout.HorizontalAlignment, Layout.Padding = Enum.HorizontalAlignment.Center, UDim.new(0,6)
+
+-- Hàm tạo Nút Bật/Tắt đẹp mắt
+local function AddToggle(txt, fn)
+    local B = Instance.new("TextButton", Scroll)
+    B.Size, B.BackgroundColor3, B.Text = UDim2.new(0,220,0,35), Color3.fromRGB(180,40,40), txt..": TẮT"
+    B.TextColor3, B.Font, B.TextSize = Color3.fromRGB(255,255,255), Enum.Font.GothamSemibold, 12
+    Instance.new("UICorner", B).CornerRadius = UDim.new(0,6)
+    local state = false
+    B.MouseButton1Click:Connect(function()
+        state = not state
+        B.Text = txt..(state and ": BẬT" or ": TẮT")
+        B.BackgroundColor3 = state and Color3.fromRGB(40,180,40) or Color3.fromRGB(180,40,40)
+        fn(state)
+    end)
+end
+
+------------------- TÍNH NĂNG ĐẶC BIỆT: FIX LAG & NÂNG FPS -------------------
+
+-- 1. Siêu Fix Lag Tổng Hợp
+AddToggle("⚡ Siêu Fix Lag (Max Smooth)", function(v)
+    Settings.UltraLagFix = v
+    if v then
+        pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 end)
+        L.FogEnd = 9e9
+        L.GlobalShadows = false
+        setFPS(60)
+        
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.Material = Enum.Material.SmoothPlastic
+                v.Reflectance = 0
+                v.CastShadow = false
+            elseif v:IsA("MeshPart") then
+                v.Material = Enum.Material.SmoothPlastic
+                v.TextureID = ""
+            elseif v:IsA("Decal") or v:IsA("Texture") then
+                v:Destroy()
+            elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+                v.Enabled = false
+            elseif v:IsA("Light") then
+                v.Enabled = false
+            end
+        end
+    end
+end)
+
+-- 2. Tắt Đổ Bóng & Ánh Sáng Nặng
+AddToggle("🌑 Tắt Đổ Bóng & Hiệu Ứng Sáng", function(v)
+    Settings.NoShadows = v
+    L.GlobalShadows = not v
+    if v then
+        pcall(function() L.Technology = Enum.Technology.Compatibility end)
+        for _, e in pairs(L:GetChildren()) do
+            if e:IsA("PostEffect") then e.Enabled = false end
+        end
+    end
+end)
+
+-- 3. Nền Trơn (No Textures / No Decals)
+AddToggle("🧱 Nền Trơn (Xóa Texture)", function(v)
+    Settings.NoTextures = v
+    if v then
+        for _, e in pairs(workspace:GetDescendants()) do
+            if e:IsA("BasePart") then
+                e.Material = Enum.Material.SmoothPlastic
+            elseif e:IsA("Decal") or e:IsA("Texture") then
+                e:Destroy()
+            end
+        end
+    end
+end)
+
+-- 4. Xóa Hiệu Ứng Chiêu Thức / Rác
+AddToggle("✨ Xóa Particle / Sparks / Smoke", function(v)
+    Settings.NoParticles = v
+    if v then
+        for _, e in pairs(workspace:GetDescendants()) do
+            if e:IsA("ParticleEmitter") or e:IsA("Smoke") or e:IsA("Fire") or e:IsA("Sparkles") or e:IsA("Explosion") then
+                e.Enabled = false
+            end
+        end
+    end
+end)
+
+------------------- TÍNH NĂNG TREO GAME / AFK MODE -------------------
+
+-- 5. Chế Độ Treo Game Siêu Mượt (Auto Lock 15 FPS khi rảnh tay)
+AddToggle("💤 Auto AFK Hạ 15 FPS (Treo Game)", function(v)
+    Settings.AFKMode = v
+    if not v then
+        setFPS(60)
+        isAFK = false
+    end
+end)
+
+-- 6. Dọn Rác Máy Chủ Định Kỳ (Clear Memory Heap)
+AddToggle("🧹 Tự Động Giải Phóng RAM", function(v)
+    if v then
+        task.spawn(function()
+            while v do
+                task.wait(60)
+                pcall(function()
+                    game:GetService("ContentProvider"):PreloadAsync({})
+                    collectgarbage("collect")
+                end)
+            end
+        end)
+    end
+end)
+
+------------------- HỆ THỐNG QUẢN LÝ TỰ ĐỘNG (BACKEND) -------------------
+
+-- Lắng nghe khi di chuyển/chạm màn hình để thoát AFK Mode
+local function resetAFKTimer()
+    lastInput = os.time()
+    if isAFK then
+        isAFK = false
+        setFPS(60)
+    end
+end
+
+U.InputBegan:Connect(resetAFKTimer)
+U.InputChanged:Connect(resetAFKTimer)
+
+-- Thread theo dõi thời gian AFK
+task.spawn(function()
+    while task.wait(1) do
+        if Settings.AFKMode and (os.time() - lastInput >= 10) and not isAFK then
+            isAFK = true
+            setFPS(15) -- Giảm FPS về 15 để máy mát tuyệt đối khi treo game
+        end
+    end
+end)
+
+-- Lắng nghe vật thể mới tạo ra trong Game để tự động xoá Lag
+workspace.DescendantAdded:Connect(function(v)
+    if Settings.UltraLagFix or Settings.NoTextures then
+        if v:IsA("BasePart") then
+            v.Material = Enum.Material.SmoothPlastic
+            v.CastShadow = false
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            v:Destroy()
+        end
+    end
+    if Settings.UltraLagFix or Settings.NoParticles then
+        if v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+            v.Enabled = false
+        end
+    end
+end)

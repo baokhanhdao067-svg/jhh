@@ -1,0 +1,144 @@
+-- [[ UTILITY FIX LAG & ANTI-AFK MENU ]] --
+local UserInputService = game:GetService("UserInputService")
+local VirtualUser = game:GetService("VirtualUser")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Tạo GUI Menu
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "OptimizationMenu"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 220, 0, 180)
+MainFrame.Position = UDim2.new(0.5, -110, 0.4, -90)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Title.Text = "BOOSTER & ANTI-AFK"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 14
+Title.Font = Enum.Font.SourceSansBold
+Title.Parent = MainFrame
+
+-- Nút Bật/Tắt Menu thu nhỏ (Toggle Button)
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "ToggleMenuBtn"
+ToggleButton.Size = UDim2.new(0, 80, 0, 30)
+ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+ToggleButton.Text = "Menu [ON]"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.TextSize = 14
+ToggleButton.Parent = ScreenGui
+
+ToggleButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+    if MainFrame.Visible then
+        ToggleButton.Text = "Menu [ON]"
+    else
+        ToggleButton.Text = "Menu [OFF]"
+    end
+end)
+
+-- 1. Chức năng Fix Lag (Tối ưu hóa đồ họa)
+local FixLagBtn = Instance.new("TextButton")
+FixLagBtn.Size = UDim2.new(0.85, 0, 0, 35)
+FixLagBtn.Position = UDim2.new(0.075, 0, 0.25, 0)
+FixLagBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+FixLagBtn.Text = "Bật Fix Lag (Siêu Mượt)"
+FixLagBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+FixLagBtn.Font = Enum.Font.SourceSans
+FixLagBtn.TextSize = 14
+FixLagBtn.Parent = MainFrame
+
+FixLagBtn.MouseButton1Click:Connect(function()
+    -- Hạ thấp đồ họa
+    settings().Rendering.QualityLevel = 1
+    
+    -- Xóa đổ bóng & ánh sáng phức tạp
+    Lighting.GlobalShadows = false
+    Lighting.FogEnd = 9e9
+    
+    for _, v in pairs(Lighting:GetChildren()) do
+        if v:IsA("PostEffect") or v:IsA("BlurEffect") or v:IsA("SunRaysEffect") then
+            v.Enabled = false
+        end
+    end
+    
+    -- Làm đơn giản cấu trúc Texture/Decal
+    for _, obj in pairs(Workspace:GetDescendants()) do
+        if obj:IsA("BasePart") then
+            obj.Material = Enum.Material.SmoothPlastic
+            obj.Reflectance = 0
+        elseif obj:IsA("Decal") or obj:IsA("Texture") then
+            obj:Destroy()
+        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire") then
+            obj.Enabled = false
+        end
+    end
+    FixLagBtn.Text = "Đã Fix Lag ✓"
+    FixLagBtn.BackgroundColor3 = Color3.fromRGB(127, 140, 141)
+end)
+
+-- 2. Chức năng Anti-AFK (Treo Game 24/7)
+local AntiAfkBtn = Instance.new("TextButton")
+AntiAfkBtn.Size = UDim2.new(0.85, 0, 0, 35)
+AntiAfkBtn.Position = UDim2.new(0.075, 0, 0.50, 0)
+AntiAfkBtn.BackgroundColor3 = Color3.fromRGB(52, 152, 219)
+AntiAfkBtn.Text = "Kích hoạt Anti-AFK"
+AntiAfkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AntiAfkBtn.Font = Enum.Font.SourceSans
+AntiAfkBtn.TextSize = 14
+AntiAfkBtn.Parent = MainFrame
+
+local antiAfkActive = false
+AntiAfkBtn.MouseButton1Click:Connect(function()
+    if not antiAfkActive then
+        antiAfkActive = true
+        AntiAfkBtn.Text = "Anti-AFK: Đang Chạy"
+        AntiAfkBtn.BackgroundColor3 = Color3.fromRGB(155, 89, 182)
+        
+        LocalPlayer.Idled:Connect(function()
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new())
+        end)
+    end
+end)
+
+-- 3. Nút Giảm FPS Nền (Siêu nhẹ khi Treo máy)
+local CapFpsBtn = Instance.new("TextButton")
+CapFpsBtn.Size = UDim2.new(0.85, 0, 0, 35)
+CapFpsBtn.Position = UDim2.new(0.075, 0, 0.75, 0)
+CapFpsBtn.BackgroundColor3 = Color3.fromRGB(230, 126, 34)
+CapFpsBtn.Text = "Lock 15 FPS (Treo Máy)"
+CapFpsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CapFpsBtn.Font = Enum.Font.SourceSans
+CapFpsBtn.TextSize = 14
+CapFpsBtn.Parent = MainFrame
+
+local fpsLocked = false
+CapFpsBtn.MouseButton1Click:Connect(function()
+    if not fpsLocked then
+        fpsLocked = true
+        setfpscap(15)
+        CapFpsBtn.Text = "Đã Khóa 15 FPS"
+    else
+        fpsLocked = false
+        setfpscap(60)
+        CapFpsBtn.Text = "Lock 15 FPS (Treo Máy)"
+    end
+end)

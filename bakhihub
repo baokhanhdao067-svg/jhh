@@ -1,0 +1,244 @@
+-- [[ GOD MODE V3 - ULTIMATE AIM & ESP ULTRA CHEAT ]] --
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+local Mouse = LocalPlayer:GetMouse()
+
+-- [[ CẤU HÌNH HE THONG HIGH-TECH ]] --
+local Settings = {
+    AimbotEnabled = true,
+    SilentAim = true,
+    Prediction = true,
+    PredictSpeed = 0.165,
+    TriggerBot = true,        -- Tự động nhấp chuột khi tâm trúng địch
+    Wallbang = true,          -- Bỏ qua va chạm tường khi Aim
+    FovRadius = 160,
+    RainbowFov = true,        -- Vòng FOV đổi màu RGB liên tục
+    EspEnabled = true,
+    EspTracer = true,         -- Dây dắt hướng từ chân người chơi tới địch
+    TeamCheck = true,
+    SpeedHack = false,
+    WalkSpeed = 32,           -- Tốc độ di chuyển
+    JumpPower = 80            -- Độ cao khi nhảy
+}
+
+-- [[ 1. TẠO VÒNG TRÒN FOV RGB ]] --
+local FovCircle = Drawing.new("Circle")
+FovCircle.Thickness = 2
+FovCircle.NumSides = 90
+FovCircle.Filled = false
+FovCircle.Transparency = 0.9
+FovCircle.Visible = true
+FovCircle.Radius = Settings.FovRadius
+FovCircle.Color = Color3.fromRGB(0, 255, 200)
+
+-- [[ 2. GIAO DIỆN GUI ULTRA BLACK-RED ]] --
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "GodModeV3Menu"
+ScreenGui.ResetOnSpawn = false
+pcall(function() ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end)
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 290, 0, 390)
+MainFrame.Position = UDim2.new(0.02, 0, 0.15, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.BackgroundColor3 = Color3.fromRGB(220, 35, 35)
+Title.Text = "⚡ GOD MODE V3 - ULTIMATE CHEAT ⚡"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 14
+Title.Parent = MainFrame
+
+local function CreateToggle(text, posY, defaultVal, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.9, 0, 0, 26)
+    btn.Position = UDim2.new(0.05, 0, 0, posY)
+    btn.BackgroundColor3 = defaultVal and Color3.fromRGB(200, 35, 35) or Color3.fromRGB(40, 40, 50)
+    btn.Text = text .. ": " .. (defaultVal and "ON" or "OFF")
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 12
+    btn.Parent = MainFrame
+    
+    local state = defaultVal
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        btn.BackgroundColor3 = state and Color3.fromRGB(200, 35, 35) or Color3.fromRGB(40, 40, 50)
+        btn.Text = text .. ": " .. (state and "ON" or "OFF")
+        callback(state)
+    end)
+    return btn
+end
+
+-- Toggles Nâng Cấp
+CreateToggle("Aimbot Ghim Đầu AI", 40, Settings.AimbotEnabled, function(v) Settings.AimbotEnabled = v end)
+CreateToggle("Silent Aim (Đạn Tìm Đầu)", 70, Settings.SilentAim, function(v) Settings.SilentAim = v end)
+CreateToggle("TriggerBot (Tự Động Bắn)", 100, Settings.TriggerBot, function(v) Settings.TriggerBot = v end)
+CreateToggle("Wallbang (Bắn Bỏ Qua Tường)", 130, Settings.Wallbang, function(v) Settings.Wallbang = v end)
+CreateToggle("Định Vị ESP + Máu Động", 160, Settings.EspEnabled, function(v) Settings.EspEnabled = v end)
+CreateToggle("ESP Tracer (Dây Chỉ Hướng)", 190, Settings.EspTracer, function(v) Settings.EspTracer = v end)
+CreateToggle("Rainbow FOV (Đổi Màu Liên Tục)", 220, Settings.RainbowFov, function(v) Settings.RainbowFov = v end)
+CreateToggle("Tăng Tốc Độ Di Chuyển (Speed)", 250, Settings.SpeedHack, function(v) Settings.SpeedHack = v end)
+
+-- Phím Ẩn/Hiện Menu (Right-Control)
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
+        MainFrame.Visible = not MainFrame.Visible
+    end
+end)
+
+-- [[ 3. THUẬT TOÁN TÌM MỤC TIÊU BẮN XUYÊN TƯỜNG ]] --
+local function GetClosestTargetInFOV()
+    local closestTarget = nil
+    local shortestDistance = Settings.FovRadius
+    local mousePos = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") and plr.Character:FindFirstChild("Humanoid") then
+            if plr.Character.Humanoid.Health > 0 then
+                if not Settings.TeamCheck or plr.Team ~= LocalPlayer.Team then
+                    local head = plr.Character.Head
+                    local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                    
+                    if onScreen then
+                        local distToMouse = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                        if distToMouse < shortestDistance then
+                            -- WallCheck / Wallbang Logic
+                            if Settings.Wallbang then
+                                shortestDistance = distToMouse
+                                closestTarget = plr
+                            else
+                                local ray = Ray.new(Camera.CFrame.Position, (head.Position - Camera.CFrame.Position).Unit * 500)
+                                local hit = Workspace:FindPartOnRayWithIgnoreList(ray, {LocalPlayer.Character})
+                                if hit and hit:IsDescendantOf(plr.Character) then
+                                    shortestDistance = distToMouse
+                                    closestTarget = plr
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return closestTarget
+end
+
+-- [[ 4. HỆ THỐNG ESP TRACER + BOX CHUẨN VIP ]] --
+local EspHolders = {}
+local function CreateEsp(plr)
+    if EspHolders[plr] then return end
+    local box = Drawing.new("Square")
+    box.Color = Color3.fromRGB(255, 30, 30); box.Thickness = 1.5; box.Filled = false; box.Visible = false
+
+    local healthBar = Drawing.new("Square")
+    healthBar.Thickness = 1; healthBar.Filled = true; healthBar.Visible = false
+
+    local tracer = Drawing.new("Line")
+    tracer.Color = Color3.fromRGB(0, 255, 200); tracer.Thickness = 1.2; tracer.Visible = false
+
+    local nameText = Drawing.new("Text")
+    nameText.Color = Color3.fromRGB(255, 255, 255); nameText.Size = 13; nameText.Center = true; nameText.Outline = true; nameText.Visible = false
+
+    EspHolders[plr] = {Box = box, Health = healthBar, Tracer = tracer, Text = nameText}
+end
+
+-- [[ 5. VÒNG LẶP XỬ LÝ SIÊU TỐC (RENDER LOOP 144Hz+) ]] --
+local hue = 0
+RunService.RenderStepped:Connect(function()
+    -- Cập nhật Rainbow FOV
+    local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    FovCircle.Position = screenCenter
+    if Settings.RainbowFov then
+        hue = (hue + 0.005) % 1
+        FovCircle.Color = Color3.fromHSV(hue, 0.8, 1)
+    end
+
+    -- Logic Aim & TriggerBot
+    if Settings.AimbotEnabled then
+        local target = GetClosestTargetInFOV()
+        if target and target.Character and target.Character:FindFirstChild("Head") then
+            local targetHead = target.Character.Head
+            local targetPos = targetHead.Position
+
+            if Settings.Prediction and target.Character:FindFirstChild("HumanoidRootPart") then
+                targetPos = targetPos + (target.Character.HumanoidRootPart.Velocity * Settings.PredictSpeed)
+            end
+
+            -- Ghim tâm cực mượt
+            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, targetPos), 0.1)
+
+            -- TriggerBot (Tự bấm chuột bắn)
+            if Settings.TriggerBot then
+                mouse1click()
+            end
+        end
+    end
+
+    -- Speed Hack Logic
+    if Settings.SpeedHack and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = Settings.WalkSpeed
+    end
+
+    -- Cập nhật ESP & Tracer Line
+    if Settings.EspEnabled then
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer then
+                if not EspHolders[plr] then CreateEsp(plr) end
+                local esp = EspHolders[plr]
+                local char = plr.Character
+                
+                if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
+                    local hrp = char.HumanoidRootPart
+                    local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+                    
+                    if onScreen then
+                        local headPos = Camera:WorldToViewportPoint(char.Head.Position + Vector3.new(0, 0.5, 0))
+                        local legPos = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
+                        local height = math.abs(headPos.Y - legPos.Y)
+                        local width = height / 1.8
+
+                        esp.Box.Size = Vector2.new(width, height)
+                        esp.Box.Position = Vector2.new(screenPos.X - width / 2, screenPos.Y - height / 2)
+                        esp.Box.Visible = true
+
+                        local healthPct = math.clamp(char.Humanoid.Health / char.Humanoid.MaxHealth, 0, 1)
+                        esp.Health.Size = Vector2.new(2, height * healthPct)
+                        esp.Health.Position = Vector2.new((screenPos.X - width / 2) - 5, (screenPos.Y + height / 2) - (height * healthPct))
+                        esp.Health.Color = Color3.fromRGB(255 * (1 - healthPct), 255 * healthPct, 0)
+                        esp.Health.Visible = true
+
+                        -- Dây Tracer dắt từ đáy màn hình tới mục tiêu
+                        if Settings.EspTracer then
+                            esp.Tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                            esp.Tracer.To = Vector2.new(screenPos.X, screenPos.Y)
+                            esp.Tracer.Visible = true
+                        else
+                            esp.Tracer.Visible = false
+                        end
+
+                        esp.Text.Text = string.format("%s | %dM", plr.Name, math.floor((hrp.Position - Camera.CFrame.Position).Magnitude))
+                        esp.Text.Position = Vector2.new(screenPos.X, screenPos.Y - (height / 2) - 15)
+                        esp.Text.Visible = true
+                    else
+                        esp.Box.Visible = false; esp.Health.Visible = false; esp.Tracer.Visible = false; esp.Text.Visible = false
+                    end
+                else
+                    if esp then
+                        esp.Box.Visible = false; esp.Health.Visible = false; esp.Tracer.Visible = false; esp.Text.Visible = false
+                    end
+                end
+            end
+        end
+    end
+end)

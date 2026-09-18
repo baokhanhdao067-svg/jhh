@@ -1,0 +1,344 @@
+-- [[ GOD MODE V7 - TITANIUM EDITION (OVERDRIVE 200%) ]] --
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+-- [[ CẤU HÌNH HỆ THỐNG V7 ]] --
+local Settings = {
+    AimbotEnabled = true,
+    AimHeadRate = 200,        -- Tỷ lệ ghim đầu (Max 200% Overdrive)
+    TitaniumLock = true,      -- Lock cứng siêu việt không bao giờ trượt
+    Prediction = true,        -- AI tính toán hướng di chuyển
+    PredictSpeed = 0.14,
+    SilentHitbox = true,      -- Phóng to đầu đối thủ
+    HitboxSize = 6,           -- Kích thước Hitbox đầu
+    FovRadius = 220,
+    ShowFov = true,
+    EspEnabled = true,        -- Chức năng 1: Định vị + Thanh máu
+    TargetPuppets = true,     -- Quét NPC / Con rối / Rig / Quái
+    EspTracer = true          -- Vẽ dây dắt chỉ hướng
+}
+
+-- [[ 1. TẠO VÒNG TRÒN FOV ]] --
+local FovCircle = Drawing.new("Circle")
+FovCircle.Thickness = 2
+FovCircle.NumSides = 80
+FovCircle.Filled = false
+FovCircle.Transparency = 0.9
+FovCircle.Visible = Settings.ShowFov
+FovCircle.Radius = Settings.FovRadius
+FovCircle.Color = Color3.fromRGB(255, 0, 80)
+
+-- [[ 2. GIAO DIỆN MENU MOBILE & PC ]] --
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DeltaGodModeV7"
+ScreenGui.ResetOnSpawn = false
+pcall(function() ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end)
+
+-- Nút Tròn Di Động Bật/Tắt Menu
+local ToggleMenuBtn = Instance.new("TextButton")
+ToggleMenuBtn.Size = UDim2.new(0, 50, 0, 50)
+ToggleMenuBtn.Position = UDim2.new(0.03, 0, 0.15, 0)
+ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(15, 12, 18)
+ToggleMenuBtn.Text = "🔥 V7"
+ToggleMenuBtn.TextColor3 = Color3.fromRGB(255, 0, 80)
+ToggleMenuBtn.Font = Enum.Font.SourceSansBold
+ToggleMenuBtn.TextSize = 16
+ToggleMenuBtn.Active = true
+ToggleMenuBtn.Draggable = true
+ToggleMenuBtn.Parent = ScreenGui
+
+local UICornerBtn = Instance.new("UICorner")
+UICornerBtn.CornerRadius = UDim.new(1, 0)
+UICornerBtn.Parent = ToggleMenuBtn
+
+local UIStrokeBtn = Instance.new("UIStroke")
+UIStrokeBtn.Color = Color3.fromRGB(255, 0, 80)
+UIStrokeBtn.Thickness = 2
+UIStrokeBtn.Parent = ToggleMenuBtn
+
+-- Frame Menu Chính
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 290, 0, 360)
+MainFrame.Position = UDim2.new(0.12, 0, 0.15, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 10, 14)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Visible = true
+MainFrame.Parent = ScreenGui
+
+local UICornerFrame = Instance.new("UICorner")
+UICornerFrame.CornerRadius = UDim.new(0, 10)
+UICornerFrame.Parent = MainFrame
+
+local UIStrokeFrame = Instance.new("UIStroke")
+UIStrokeFrame.Color = Color3.fromRGB(255, 0, 80)
+UIStrokeFrame.Thickness = 1
+UIStrokeFrame.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 38)
+Title.BackgroundColor3 = Color3.fromRGB(22, 15, 20)
+Title.Text = "👑 GOD MODE V7 - TITANIUM 200% 👑"
+Title.TextColor3 = Color3.fromRGB(255, 0, 80)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 13
+Title.Parent = MainFrame
+
+ToggleMenuBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+local function CreateToggle(text, posY, defaultVal, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.9, 0, 0, 28)
+    btn.Position = UDim2.new(0.05, 0, 0, posY)
+    btn.BackgroundColor3 = defaultVal and Color3.fromRGB(255, 0, 80) or Color3.fromRGB(40, 35, 45)
+    btn.Text = text .. ": " .. (defaultVal and "ON" or "OFF")
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 12
+    btn.Parent = MainFrame
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+    
+    local state = defaultVal
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        btn.BackgroundColor3 = state and Color3.fromRGB(255, 0, 80) or Color3.fromRGB(40, 35, 45)
+        btn.Text = text .. ": " .. (state and "ON" or "OFF")
+        callback(state)
+    end)
+    return btn
+end
+
+-- Các nút tùy chọn
+CreateToggle("Chức Năng 1: Định Vị ESP & Máu", 45, Settings.EspEnabled, function(v) Settings.EspEnabled = v end)
+CreateToggle("Chức Năng 2: AIMBOT Ghim Người Gần Nhất", 78, Settings.AimbotEnabled, function(v) Settings.AimbotEnabled = v end)
+CreateToggle("Aim Cả Con Rối / Quái / NPC", 111, Settings.TargetPuppets, function(v) Settings.TargetPuppets = v end)
+CreateToggle("Titanium Headlock (Ghim Siêu Cứng)", 144, Settings.TitaniumLock, function(v) Settings.TitaniumLock = v end)
+CreateToggle("Hitbox Expander (Phóng To Đầu)", 177, Settings.SilentHitbox, function(v) Settings.SilentHitbox = v end)
+CreateToggle("ESP Tracer Line (Dây Chỉ Hướng)", 210, Settings.EspTracer, function(v) Settings.EspTracer = v end)
+CreateToggle("Hiện Vòng Tròn FOV", 243, Settings.ShowFov, function(v) Settings.ShowFov = v; FovCircle.Visible = v end)
+
+-- Thanh Trượt Tỷ Lệ Tối Đa 200%
+local SliderLabel = Instance.new("TextLabel")
+SliderLabel.Size = UDim2.new(0.9, 0, 0, 18)
+SliderLabel.Position = UDim2.new(0.05, 0, 0, 280)
+SliderLabel.BackgroundTransparency = 1
+SliderLabel.Text = "Tỷ Lệ Vào Đầu Overdrive: " .. Settings.AimHeadRate .. "%"
+SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+SliderLabel.Font = Enum.Font.SourceSansBold
+SliderLabel.TextSize = 12
+SliderLabel.Parent = MainFrame
+
+local SliderFrame = Instance.new("Frame")
+SliderFrame.Size = UDim2.new(0.9, 0, 0, 12)
+SliderFrame.Position = UDim2.new(0.05, 0, 0, 305)
+SliderFrame.BackgroundColor3 = Color3.fromRGB(40, 35, 45)
+SliderFrame.Parent = MainFrame
+
+local SliderCorner = Instance.new("UICorner")
+SliderCorner.CornerRadius = UDim.new(0, 4)
+SliderCorner.Parent = SliderFrame
+
+local SliderFill = Instance.new("Frame")
+SliderFill.Size = UDim2.new(Settings.AimHeadRate / 200, 0, 1, 0)
+SliderFill.BackgroundColor3 = Color3.fromRGB(255, 0, 80)
+SliderFill.Parent = SliderFrame
+
+local isDragging = false
+local function UpdateSlider(input)
+    local pos = math.clamp((input.Position.X - SliderFrame.AbsolutePosition.X) / SliderFrame.AbsoluteSize.X, 0, 1)
+    SliderFill.Size = UDim2.new(pos, 0, 1, 0)
+    Settings.AimHeadRate = math.floor(pos * 200)
+    SliderLabel.Text = "Tỷ Lệ Vào Đầu Overdrive: " .. Settings.AimHeadRate .. "%"
+end
+
+SliderFrame.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+        isDragging = true; UpdateSlider(inp)
+    end
+end)
+UserInputService.InputEnded:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+        isDragging = false
+    end
+end)
+UserInputService.InputChanged:Connect(function(inp)
+    if isDragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+        UpdateSlider(inp)
+    end
+end)
+
+-- [[ 3. THUẬT TOÁN ƯU TIÊN MỤC TIÊU GẦN NHẤT (SMART DISTANCE) ]] --
+local function GetNearestTarget()
+    local nearestHead = nil
+    local shortestWorldDistance = math.huge -- Khoảng cách mét (Studs) nhỏ nhất
+    local myPos = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character.HumanoidRootPart.Position
+
+    if not myPos then return nil end
+
+    -- Quét Người Chơi
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") and plr.Character:FindFirstChild("Humanoid") then
+            if plr.Character.Humanoid.Health > 0 then
+                local head = plr.Character.Head
+                local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                if onScreen then
+                    local worldDist = (head.Position - myPos).Magnitude
+                    if worldDist < shortestWorldDistance and worldDist <= Settings.FovRadius * 2 then
+                        shortestWorldDistance = worldDist
+                        nearestHead = head
+                    end
+                end
+            end
+        end
+    end
+
+    -- Quét NPC / Con Rối / Quái Gần Nhất
+    if Settings.TargetPuppets then
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            if obj:IsA("Model") and obj ~= LocalPlayer.Character and obj:FindFirstChild("Head") and obj:FindFirstChild("Humanoid") then
+                if not Players:GetPlayerFromCharacter(obj) and obj.Humanoid.Health > 0 then
+                    local head = obj.Head
+                    local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                    if onScreen then
+                        local worldDist = (head.Position - myPos).Magnitude
+                        if worldDist < shortestWorldDistance and worldDist <= Settings.FovRadius * 2 then
+                            shortestWorldDistance = worldDist
+                            nearestHead = head
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return nearestHead
+end
+
+-- [[ 4. HỆ THỐNG ĐỊNH VỊ ESP & MÁU ]] --
+local EspHolders = {}
+local function DrawEsp(model, name, health, maxHealth, isPlayer)
+    if not EspHolders[model] then
+        local box = Drawing.new("Square")
+        box.Color = isPlayer and Color3.fromRGB(255, 0, 80) or Color3.fromRGB(255, 180, 0)
+        box.Thickness = 1.5; box.Filled = false; box.Visible = false
+
+        local healthBar = Drawing.new("Square")
+        healthBar.Thickness = 1.5; healthBar.Filled = true; healthBar.Visible = false
+
+        local tracer = Drawing.new("Line")
+        tracer.Color = Color3.fromRGB(255, 0, 80); tracer.Thickness = 1.2; tracer.Visible = false
+
+        local text = Drawing.new("Text")
+        text.Color = Color3.fromRGB(255, 255, 255)
+        text.Size = 12; text.Center = true; text.Outline = true; text.Visible = false
+
+        EspHolders[model] = {Box = box, Health = healthBar, Tracer = tracer, Text = text}
+    end
+
+    local esp = EspHolders[model]
+    local hrp = model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Torso") or model.PrimaryPart
+    if hrp and model:FindFirstChild("Head") then
+        local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+        if onScreen then
+            local headPos = Camera:WorldToViewportPoint(model.Head.Position + Vector3.new(0, 0.5, 0))
+            local legPos = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
+            local height = math.abs(headPos.Y - legPos.Y)
+            local width = height / 1.8
+
+            esp.Box.Size = Vector2.new(width, height)
+            esp.Box.Position = Vector2.new(screenPos.X - width / 2, screenPos.Y - height / 2)
+            esp.Box.Visible = true
+
+            local healthPct = math.clamp(health / maxHealth, 0, 1)
+            esp.Health.Size = Vector2.new(2, height * healthPct)
+            esp.Health.Position = Vector2.new((screenPos.X - width / 2) - 5, (screenPos.Y + height / 2) - (height * healthPct))
+            esp.Health.Color = Color3.fromRGB(255 * (1 - healthPct), 255 * healthPct, 0)
+            esp.Health.Visible = true
+
+            if Settings.EspTracer then
+                esp.Tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                esp.Tracer.To = Vector2.new(screenPos.X, screenPos.Y)
+                esp.Tracer.Visible = true
+            else
+                esp.Tracer.Visible = false
+            end
+
+            esp.Text.Text = string.format("%s [%d/%d]", name, math.floor(health), math.floor(maxHealth))
+            esp.Text.Position = Vector2.new(screenPos.X, screenPos.Y - (height / 2) - 14)
+            esp.Text.Visible = true
+        else
+            esp.Box.Visible = false; esp.Health.Visible = false; esp.Tracer.Visible = false; esp.Text.Visible = false
+        end
+    end
+end
+
+-- [[ 5. ENGINE TITANIUM LOCK 200% OVERDRIVE (RENDER STEPPED) ]] --
+RunService.RenderStepped:Connect(function()
+    FovCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+
+    -- CHỨC NĂNG 2: AIMBOT TITANIUM GHIM CỨNG MỤC TIÊU GẦN NHẤT
+    if Settings.AimbotEnabled then
+        local targetHead = GetNearestTarget()
+        if targetHead then
+            -- Tỷ lệ trúng đầu Overdrive (Tới 200%)
+            local chance = math.random(1, 100)
+            if chance <= math.clamp(Settings.AimHeadRate, 1, 100) or Settings.AimHeadRate > 100 then
+                local targetPos = targetHead.Position
+                if Settings.Prediction and targetHead.Parent:FindFirstChild("HumanoidRootPart") then
+                    targetPos = targetPos + (targetHead.Parent.HumanoidRootPart.Velocity * Settings.PredictSpeed)
+                end
+
+                -- Phóng to Hitbox đầu
+                if Settings.SilentHitbox then
+                    targetHead.Size = Vector3.new(Settings.HitboxSize, Settings.HitboxSize, Settings.HitboxSize)
+                    targetHead.Transparency = 0.5
+                    targetHead.CanCollide = false
+                end
+
+                -- Ghim Siêu Cứng (Titanium Lock CFrame trực tiếp)
+                if Settings.TitaniumLock then
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos)
+                else
+                    Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, targetPos), 0.4)
+                end
+            end
+        end
+    end
+
+    -- CHỨC NĂNG 1: QUÉT ESP ĐỊNH VỊ
+    if Settings.EspEnabled then
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") and plr.Character:FindFirstChild("Humanoid") then
+                if plr.Character.Humanoid.Health > 0 then
+                    DrawEsp(plr.Character, plr.Name, plr.Character.Humanoid.Health, plr.Character.Humanoid.MaxHealth, true)
+                end
+            end
+        end
+        if Settings.TargetPuppets then
+            for _, obj in pairs(Workspace:GetDescendants()) do
+                if obj:IsA("Model") and obj ~= LocalPlayer.Character and obj:FindFirstChild("Head") and obj:FindFirstChild("Humanoid") then
+                    if not Players:GetPlayerFromCharacter(obj) and obj.Humanoid.Health > 0 then
+                        DrawEsp(obj, obj.Name, obj.Humanoid.Health, obj.Humanoid.MaxHealth, false)
+                    end
+                end
+            end
+        end
+    else
+        for _, esp in pairs(EspHolders) do
+            esp.Box.Visible = false
+            esp.Health.Visible = false
+            esp.Tracer.Visible = false
+            esp.Text.Visible = false
+        end
+    end
+end)

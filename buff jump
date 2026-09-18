@@ -1,0 +1,49 @@
+-- Jump Power Hub (Delta Compatible)
+-- Max Jump Power: 1000 | Custom Toggle & Slider UI
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("Jump Power Buff Hub", "BloodTheme")
+
+local Tab = Window:NewTab("Main Controller")
+local Section = Tab:NewSection("Sức Mạnh Nhảy (Jump Power)")
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local JumpPowerValue = 50
+local ToggleState = false
+
+-- Hàm cập nhật Jump Power liên tục
+local function updateJumpPower()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        humanoid.UseJumpPower = true
+        
+        if ToggleState then
+            humanoid.JumpPower = JumpPowerValue
+        else
+            humanoid.JumpPower = 50 -- Trở về mặc định
+        end
+    end
+end
+
+-- Tự động áp dụng khi hồi sinh (Respawn)
+LocalPlayer.CharacterAdded:Connect(function(character)
+    character:WaitForChild("Humanoid")
+    task.wait(0.5)
+    updateJumpPower()
+end)
+
+-- Nút Bật/Tắt (Toggle)
+Section:NewToggle("Bật Buff Nhảy", "Bật hoặc tắt sức mạnh nhảy", function(state)
+    ToggleState = state
+    updateJumpPower()
+end)
+
+-- Thanh trượt chỉnh sức mạnh từ 0 đến 1000
+Section:NewSlider("Chỉnh Sức Mạnh Nhảy", "Chỉnh độ cao nhảy từ 0 -> 1000", 1000, 0, function(value)
+    JumpPowerValue = value
+    if ToggleState then
+        updateJumpPower()
+    end
+end)

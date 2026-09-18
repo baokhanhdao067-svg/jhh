@@ -1,0 +1,293 @@
+-- [[ GOD MODE V5 - UNIVERSAL DELTA EXECUTOR SCRIPT ]] --
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+-- [[ CẤU HÌNH HỆ THỐNG ]] --
+local Settings = {
+    AimbotEnabled = true,
+    AimHeadRate = 100,        -- Tỷ lệ bắn vào đầu (0% - 100%)
+    LockDistance = 300,       -- Tầm quét kẻ địch/con rối
+    FovRadius = 180,
+    EspEnabled = true,        -- Chức năng 1: Định vị & Hiện máu
+    TargetPuppets = true      -- Aim cả NPC / Con rối / Monster
+}
+
+-- [[ 1. TẠO TÂM QUÉT FOV ]] --
+local FovCircle = Drawing.new("Circle")
+FovCircle.Thickness = 1.5
+FovCircle.NumSides = 60
+FovCircle.Filled = false
+FovCircle.Transparency = 0.8
+FovCircle.Visible = true
+FovCircle.Radius = Settings.FovRadius
+FovCircle.Color = Color3.fromRGB(0, 255, 170)
+
+-- [[ 2. GIAO DIỆN GUI ULTRA MOBILE (HỖ TRỢ NÚT TRÒN AN/HIEN MENU) ]] --
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DeltaGodModeV5"
+ScreenGui.ResetOnSpawn = false
+pcall(function() ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end)
+
+-- Nút Tròn Bật/Tắt Menu Di Động (Dành cho Mobile / Delta)
+local ToggleMenuBtn = Instance.new("TextButton")
+ToggleMenuBtn.Size = UDim2.new(0, 45, 0, 45)
+ToggleMenuBtn.Position = UDim2.new(0.05, 0, 0.1, 0)
+ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 170)
+ToggleMenuBtn.Text = "MENU"
+ToggleMenuBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+ToggleMenuBtn.Font = Enum.Font.SourceSansBold
+ToggleMenuBtn.TextSize = 12
+ToggleMenuBtn.Active = true
+ToggleMenuBtn.Draggable = true
+ToggleMenuBtn.Parent = ScreenGui
+
+local UICornerBtn = Instance.new("UICorner")
+UICornerBtn.CornerRadius = UDim.new(1, 0)
+UICornerBtn.Parent = ToggleMenuBtn
+
+-- Khung Menu Chính
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 280, 0, 260)
+MainFrame.Position = UDim2.new(0.15, 0, 0.2, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Visible = true
+MainFrame.Parent = ScreenGui
+
+local UICornerFrame = Instance.new("UICorner")
+UICornerFrame.CornerRadius = UDim.new(0, 10)
+UICornerFrame.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+Title.Text = "🔥 DELTA ULTRA MENU V5 🔥"
+Title.TextColor3 = Color3.fromRGB(0, 255, 170)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 15
+Title.Parent = MainFrame
+
+ToggleMenuBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+local function CreateToggle(text, posY, defaultVal, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.9, 0, 0, 32)
+    btn.Position = UDim2.new(0.05, 0, 0, posY)
+    btn.BackgroundColor3 = defaultVal and Color3.fromRGB(0, 180, 100) or Color3.fromRGB(180, 40, 40)
+    btn.Text = text .. ": " .. (defaultVal and "ON" or "OFF")
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 12
+    btn.Parent = MainFrame
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+    
+    local state = defaultVal
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        btn.BackgroundColor3 = state and Color3.fromRGB(0, 180, 100) or Color3.fromRGB(180, 40, 40)
+        btn.Text = text .. ": " .. (state and "ON" or "OFF")
+        callback(state)
+    end)
+    return btn
+end
+
+-- Bật/Tắt Chức Năng 1 & 2
+CreateToggle("Chức Năng 1: Định Vị & Hiện Máu", 45, Settings.EspEnabled, function(v) Settings.EspEnabled = v end)
+CreateToggle("Chức Năng 2: AIMBOT Ghim Đầu 502", 85, Settings.AimbotEnabled, function(v) Settings.AimbotEnabled = v end)
+CreateToggle("Aim Cả NPC / Con Rối / Quái", 125, Settings.TargetPuppets, function(v) Settings.TargetPuppets = v end)
+
+-- Thanh Điều Chỉnh Tỷ Lệ Vào Đầu (0% - 100%)
+local SliderLabel = Instance.new("TextLabel")
+SliderLabel.Size = UDim2.new(0.9, 0, 0, 20)
+SliderLabel.Position = UDim2.new(0.05, 0, 0, 168)
+SliderLabel.BackgroundTransparency = 1
+SliderLabel.Text = "Tỷ Lệ Ghim Đầu: " .. Settings.AimHeadRate .. "%"
+SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+SliderLabel.Font = Enum.Font.SourceSansBold
+SliderLabel.TextSize = 13
+SliderLabel.Parent = MainFrame
+
+local SliderFrame = Instance.new("Frame")
+SliderFrame.Size = UDim2.new(0.9, 0, 0, 14)
+SliderFrame.Position = UDim2.new(0.05, 0, 0, 195)
+SliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+SliderFrame.Parent = MainFrame
+
+local SliderFill = Instance.new("Frame")
+SliderFill.Size = UDim2.new(Settings.AimHeadRate / 100, 0, 1, 0)
+SliderFill.BackgroundColor3 = Color3.fromRGB(0, 255, 170)
+SliderFill.Parent = SliderFrame
+
+local isDragging = false
+local function UpdateSlider(input)
+    local pos = math.clamp((input.Position.X - SliderFrame.AbsolutePosition.X) / SliderFrame.AbsoluteSize.X, 0, 1)
+    SliderFill.Size = UDim2.new(pos, 0, 1, 0)
+    Settings.AimHeadRate = math.floor(pos * 100)
+    SliderLabel.Text = "Tỷ Lệ Ghim Đầu: " .. Settings.AimHeadRate .. "%"
+end
+
+SliderFrame.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+        isDragging = true; UpdateSlider(inp)
+    end
+end)
+UserInputService.InputEnded:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+        isDragging = false
+    end
+end)
+UserInputService.InputChanged:Connect(function(inp)
+    if isDragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+        UpdateSlider(inp)
+    end
+end)
+
+-- [[ 3. THUẬT TOÁN TÌM NGƯỜI CHƠI VÀ CON RỐI (EVERY GAME COMPATIBLE) ]] --
+local function GetClosestTarget()
+    local closestTarget = nil
+    local shortestDistance = Settings.FovRadius
+    local mousePos = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+
+    -- 1. Lọc Người Chơi
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") and plr.Character:FindFirstChild("Humanoid") then
+            if plr.Character.Humanoid.Health > 0 then
+                local head = plr.Character.Head
+                local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                if onScreen then
+                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                    if dist < shortestDistance then
+                        shortestDistance = dist
+                        closestTarget = head
+                    end
+                end
+            end
+        end
+    end
+
+    -- 2. Lọc Con Rối / NPC / Quái (Nếu bật Chức năng Quét Con Rối)
+    if Settings.TargetPuppets then
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            if obj:IsA("Model") and obj ~= LocalPlayer.Character and obj:FindFirstChild("Head") and obj:FindFirstChild("Humanoid") then
+                if not Players:GetPlayerFromCharacter(obj) and obj.Humanoid.Health > 0 then
+                    local head = obj.Head
+                    local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                    if onScreen then
+                        local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                        if dist < shortestDistance then
+                            shortestDistance = dist
+                            closestTarget = head
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return closestTarget
+end
+
+-- [[ 4. CHỨC NĂNG 1: HỆ THỐNG ĐỊNH VỊ ESP & MÁU ]] --
+local EspHolders = {}
+local function DrawEsp(model, name, health, maxHealth, isPlayer)
+    if not EspHolders[model] then
+        local box = Drawing.new("Square")
+        box.Color = isPlayer and Color3.fromRGB(255, 50, 50) or Color3.fromRGB(255, 200, 0)
+        box.Thickness = 1.5; box.Filled = false; box.Visible = false
+
+        local healthBar = Drawing.new("Square")
+        healthBar.Thickness = 1; healthBar.Filled = true; healthBar.Visible = false
+
+        local text = Drawing.new("Text")
+        text.Color = Color3.fromRGB(255, 255, 255)
+        text.Size = 12; text.Center = true; text.Outline = true; text.Visible = false
+
+        EspHolders[model] = {Box = box, Health = healthBar, Text = text}
+    end
+
+    local esp = EspHolders[model]
+    local hrp = model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Torso") or model.PrimaryPart
+    if hrp then
+        local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+        if onScreen then
+            local headPos = Camera:WorldToViewportPoint(model.Head.Position + Vector3.new(0, 0.5, 0))
+            local legPos = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
+            local height = math.abs(headPos.Y - legPos.Y)
+            local width = height / 1.8
+
+            esp.Box.Size = Vector2.new(width, height)
+            esp.Box.Position = Vector2.new(screenPos.X - width / 2, screenPos.Y - height / 2)
+            esp.Box.Visible = true
+
+            local healthPct = math.clamp(health / maxHealth, 0, 1)
+            esp.Health.Size = Vector2.new(2, height * healthPct)
+            esp.Health.Position = Vector2.new((screenPos.X - width / 2) - 5, (screenPos.Y + height / 2) - (height * healthPct))
+            esp.Health.Color = Color3.fromRGB(255 * (1 - healthPct), 255 * healthPct, 0)
+            esp.Health.Visible = true
+
+            esp.Text.Text = string.format("%s [%d/%d]", name, math.floor(health), math.floor(maxHealth))
+            esp.Text.Position = Vector2.new(screenPos.X, screenPos.Y - (height / 2) - 14)
+            esp.Text.Visible = true
+        else
+            esp.Box.Visible = false; esp.Health.Visible = false; esp.Text.Visible = false
+        end
+    end
+end
+
+-- [[ 5. ENGINE VÒNG LẶP RENDER (ULTRA FAST) ]] --
+RunService.RenderStepped:Connect(function()
+    FovCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+
+    -- CHỨC NĂNG 2: AIMBOT DÍNH 502 VÀO ĐẦU
+    if Settings.AimbotEnabled then
+        local targetHead = GetClosestTarget()
+        if targetHead then
+            -- Tính xác suất vào đầu dựa trên thanh % Slider (Max 100%)
+            local randomChance = math.random(1, 100)
+            if randomChance <= Settings.AimHeadRate then
+                -- Ép CFrame khóa chặt 100% không cho thoát
+                Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetHead.Position)
+            end
+        end
+    end
+
+    -- CHỨC NĂNG 1: QUÉT ESP ĐỊNH VỊ + MÁU
+    if Settings.EspEnabled then
+        -- Lọc Người Chơi
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") and plr.Character:FindFirstChild("Humanoid") then
+                if plr.Character.Humanoid.Health > 0 then
+                    DrawEsp(plr.Character, plr.Name, plr.Character.Humanoid.Health, plr.Character.Humanoid.MaxHealth, true)
+                end
+            end
+        end
+        -- Lọc Con Rối / NPC
+        if Settings.TargetPuppets then
+            for _, obj in pairs(Workspace:GetDescendants()) do
+                if obj:IsA("Model") and obj ~= LocalPlayer.Character and obj:FindFirstChild("Head") and obj:FindFirstChild("Humanoid") then
+                    if not Players:GetPlayerFromCharacter(obj) and obj.Humanoid.Health > 0 then
+                        DrawEsp(obj, obj.Name, obj.Humanoid.Health, obj.Humanoid.MaxHealth, false)
+                    end
+                end
+            end
+        end
+    else
+        -- Ẩn tất cả ESP khi tắt Chức năng 1
+        for _, esp in pairs(EspHolders) do
+            esp.Box.Visible = false
+            esp.Health.Visible = false
+            esp.Text.Visible = false
+        end
+    end
+end)

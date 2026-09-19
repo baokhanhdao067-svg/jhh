@@ -1,61 +1,112 @@
--- Khởi tạo thư viện Kavo UI (Tương thích tốt với Delta)
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("Buff Menu - Delta", "DarkTheme")
+-- Tải thư viện Orion UI
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
--- Tạo Nút Ẩn/Hiện GUI riêng cho Delta (Nhấn phím K hoặc dùng nút toggle của Delta)
-Library:ToggleUI()
+-- Tạo Cửa Sổ Menu
+local Window = OrionLib:MakeWindow({
+    Name = "Buff Menu - Delta", 
+    HidePremium = true, 
+    SaveConfig = false, 
+    ConfigFolder = "DeltaBuffMenu"
+})
 
--- Tạo Tab chính
-local MainTab = Window:NewTab("Chức Năng")
-local MainSection = MainTab:NewSection("Tùy Chỉnh Nhân Vật")
+-- Tạo Tab Chức Năng
+local MainTab = OrionLib:MakeTab({
+    Name = "Chức Năng",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
 
--- Biến lưu giá trị mặc định
+-- Giá trị mặc định là 10
 local jumpValue = 10
 local speedValue = 10
 
--- --- CHỨC NĂNG 1: BUFF SỨC NHẢY (Max 1000, Mặc định 10) ---
-MainSection:NewTextBox("Nhập Sức Nhảy (Max 1000)", "Mặc định là 10", function(text)
-    local val = tonumber(text)
-    if val then
-        if val > 1000 then 
-            val = 1000 
+-- --- CHỨC NĂNG 1: BUFF SỨC NHẢY (MAX 1000) ---
+MainTab:AddSection({ Name = "Tùy Chỉnh Sức Nhảy" })
+
+MainTab:AddTextbox({
+    Name = "Nhập Sức Nhảy (Max 1000)",
+    Default = "10",
+    TextDisappear = false,
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num then
+            if num > 1000 then num = 1000 end
+            jumpValue = num
         end
-        jumpValue = val
-    end
-end)
+    end	
+})
 
-MainSection:NewToggle("Bật/Tắt Sức Nhảy", "Bật để áp dụng sức nhảy đã nhập", function(state)
-    local character = game.Players.LocalPlayer.Character
-    if character and character:FindFirstChildOfClass("Humanoid") then
-        local hum = character:FindFirstChildOfClass("Humanoid")
-        if state then
-            hum.UseJumpPower = true
-            hum.JumpPower = jumpValue
-        else
-            hum.JumpPower = 50 -- Trở về mặc định của Roblox
+MainTab:AddToggle({
+    Name = "Bật/Tắt Buff Nhảy",
+    Default = false,
+    Callback = function(Value)
+        local hum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum then
+            if Value then
+                hum.UseJumpPower = true
+                hum.JumpPower = jumpValue
+            else
+                hum.JumpPower = 50 -- Trở về mặc định Roblox
+            end
         end
-    end
-end)
+    end    
+})
 
--- --- CHỨC NĂNG 2: BUFF TỐC ĐỘ (Mặc định 10) ---
-MainSection:NewTextBox("Nhập Tốc Độ Chạy", "Mặc định là 10", function(text)
-    local val = tonumber(text)
-    if val then
-        speedValue = val
-    end
-end)
+-- --- CHỨC NĂNG 2: BUFF TỐC ĐỘ ---
+MainTab:AddSection({ Name = "Tùy Chỉnh Tốc Độ" })
 
-MainSection:NewToggle("Bật/Tắt Tốc Độ", "Bật để áp dụng tốc độ đã nhập", function(state)
-    local character = game.Players.LocalPlayer.Character
-    if character and character:FindFirstChildOfClass("Humanoid") then
-        local hum = character:FindFirstChildOfClass("Humanoid")
-        if state then
-            hum.WalkSpeed = speedValue
-        else
-            hum.WalkSpeed = 16 -- Trở về mặc định của Roblox
+MainTab:AddTextbox({
+    Name = "Nhập Tốc Độ Chạy",
+    Default = "10",
+    TextDisappear = false,
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num then
+            speedValue = num
         end
-    end
+    end	
+})
+
+MainTab:AddToggle({
+    Name = "Bật/Tắt Buff Tốc Độ",
+    Default = false,
+    Callback = function(Value)
+        local hum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum then
+            if Value then
+                hum.WalkSpeed = speedValue
+            else
+                hum.WalkSpeed = 16 -- Trở về mặc định Roblox
+            end
+        end
+    end    
+})
+
+-- --- TẠO NÚT BẬT/TẮT MENU TRÊN MÀN HÌNH (Dành riêng cho Delta Mobile) ---
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleBtn = Instance.new("TextButton")
+
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "DeltaToggleGui"
+
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleBtn.Position = UDim2.new(0, 10, 0.5, -25)
+ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.Text = "MENU"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.TextSize = 14
+ToggleBtn.Draggable = true -- Có thể kéo di chuyển nút trên màn hình
+
+-- Bo tròn nút cho đẹp
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(1, 0)
+UICorner.Parent = ToggleBtn
+
+-- Logic Bật/Tắt Menu khi bấm vào nút
+ToggleBtn.MouseButton1Click:Connect(function()
+    OrionLib:ToggleUI()
 end)
 
--- Thông báo khi script load thành công
-Library:Notify("Delta Script Loaded", "Menu đã sẵn sàng sử dụng!", "rbxassetid://4483345998", 3)
+OrionLib:Init()

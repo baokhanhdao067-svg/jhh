@@ -1,0 +1,99 @@
+-- Tạo Gui chính
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local ToggleBtn = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
+local UICorner2 = Instance.new("UICorner")
+
+-- Cấu hình Vị trí & Giao diện Menu
+ScreenGui.Name = "LuckMenuGui"
+ScreenGui.Parent = game.CoreGui or game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+MainFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
+MainFrame.Size = UDim2.new(0, 250, 0, 150)
+MainFrame.Active = true
+MainFrame.Draggable = true -- Có thể kéo di chuyển menu
+
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
+
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "MENU SUPER LUCK 🍀"
+Title.TextColor3 = Color3.fromRGB(255, 215, 0)
+Title.TextSize = 18.000
+
+UICorner2.CornerRadius = UDim.new(0, 10)
+UICorner2.Parent = Title
+
+-- Nút Bật / Tắt
+ToggleBtn.Name = "ToggleBtn"
+ToggleBtn.Parent = MainFrame
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.4, 0)
+ToggleBtn.Size = UDim2.new(0.8, 0, 0.4, 0)
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.Text = "BUFF LUCK: OFF"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.TextSize = 20.000
+
+local luckEnabled = false
+local luckLoop = nil
+
+-- Hàm quét và can thiệp Luck đa game
+local function applySuperLuck()
+    local lp = game.Players.LocalPlayer
+    
+    -- 1. Tìm các giá trị Luck trong Player/Stats
+    local targets = {lp, lp:FindFirstChild("leaderstats"), lp:FindFirstChild("Stats")}
+    for _, parent in pairs(targets) do
+        if parent then
+            for _, child in pairs(parent:GetChildren()) do
+                if string.find(string.lower(child.Name), "luck") then
+                    pcall(function() child.Value = 999999 end)
+                end
+            end
+        end
+    end
+    
+    -- 2. Gửi tín hiệu kích hoạt Boost Luck qua RemoteEvents
+    for _, v in pairs(game:GetService("ReplicatedStorage"):GetDescendants()) do
+        if v:IsA("RemoteEvent") and string.find(string.lower(v.Name), "luck") then
+            pcall(function()
+                v:FireServer(true)
+                v:FireServer("SuperLuck", 999999)
+            end)
+        end
+    end
+end
+
+-- Logic Bật / Tắt
+ToggleBtn.MouseButton1Click:Connect(function()
+    luckEnabled = not luckEnabled
+    
+    if luckEnabled then
+        ToggleBtn.Text = "BUFF LUCK: ON 🚀"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 80)
+        
+        -- Chạy vòng lặp buff liên tục
+        luckLoop = task.spawn(function()
+            while luckEnabled do
+                applySuperLuck()
+                task.wait(1)
+            end
+        end)
+    else
+        ToggleBtn.Text = "BUFF LUCK: OFF"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+        if luckLoop then
+            task.cancel(luckLoop)
+        end
+    end
+end)

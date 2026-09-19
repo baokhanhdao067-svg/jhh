@@ -1,0 +1,61 @@
+-- Khởi tạo thư viện Kavo UI (Tương thích tốt với Delta)
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("Buff Menu - Delta", "DarkTheme")
+
+-- Tạo Nút Ẩn/Hiện GUI riêng cho Delta (Nhấn phím K hoặc dùng nút toggle của Delta)
+Library:ToggleUI()
+
+-- Tạo Tab chính
+local MainTab = Window:NewTab("Chức Năng")
+local MainSection = MainTab:NewSection("Tùy Chỉnh Nhân Vật")
+
+-- Biến lưu giá trị mặc định
+local jumpValue = 10
+local speedValue = 10
+
+-- --- CHỨC NĂNG 1: BUFF SỨC NHẢY (Max 1000, Mặc định 10) ---
+MainSection:NewTextBox("Nhập Sức Nhảy (Max 1000)", "Mặc định là 10", function(text)
+    local val = tonumber(text)
+    if val then
+        if val > 1000 then 
+            val = 1000 
+        end
+        jumpValue = val
+    end
+end)
+
+MainSection:NewToggle("Bật/Tắt Sức Nhảy", "Bật để áp dụng sức nhảy đã nhập", function(state)
+    local character = game.Players.LocalPlayer.Character
+    if character and character:FindFirstChildOfClass("Humanoid") then
+        local hum = character:FindFirstChildOfClass("Humanoid")
+        if state then
+            hum.UseJumpPower = true
+            hum.JumpPower = jumpValue
+        else
+            hum.JumpPower = 50 -- Trở về mặc định của Roblox
+        end
+    end
+end)
+
+-- --- CHỨC NĂNG 2: BUFF TỐC ĐỘ (Mặc định 10) ---
+MainSection:NewTextBox("Nhập Tốc Độ Chạy", "Mặc định là 10", function(text)
+    local val = tonumber(text)
+    if val then
+        speedValue = val
+    end
+end)
+
+MainSection:NewToggle("Bật/Tắt Tốc Độ", "Bật để áp dụng tốc độ đã nhập", function(state)
+    local character = game.Players.LocalPlayer.Character
+    if character and character:FindFirstChildOfClass("Humanoid") then
+        local hum = character:FindFirstChildOfClass("Humanoid")
+        if state then
+            hum.WalkSpeed = speedValue
+        else
+            hum.WalkSpeed = 16 -- Trở về mặc định của Roblox
+        end
+    end
+end)
+
+-- Thông báo khi script load thành công
+Library:Notify("Delta Script Loaded", "Menu đã sẵn sàng sử dụng!", "rbxassetid://4483345998", 3)

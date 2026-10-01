@@ -1,129 +1,170 @@
--- Create ScreenGui
+-- K HUB - Full Script Selector for Fishing Master
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
+local ToggleBtn = Instance.new("TextButton")
 local ScrollFrame = Instance.new("ScrollingFrame")
 local UIListLayout = Instance.new("UIListLayout")
-local ToggleMenuBtn = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
+local UIStroke = Instance.new("UIStroke")
 
-ScreenGui.Parent = game:GetService("CoreGui") or game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+-- Tạo ScreenGui trong CoreGui (hoặc PlayerGui)
+ScreenGui.Name = "KHUB_Menu"
+ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
 
--- Toggle Menu Button (Nút bật/tắt hiển thị menu)
-ToggleMenuBtn.Name = "ToggleMenuBtn"
-ToggleMenuBtn.Parent = ScreenGui
-ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-ToggleMenuBtn.Position = UDim2.new(0.02, 0, 0.15, 0)
-ToggleMenuBtn.Size = UDim2.new(0, 100, 0, 35)
-ToggleMenuBtn.Font = Enum.Font.SourceSansBold
-ToggleMenuBtn.Text = "Menu Scripts"
-ToggleMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleMenuBtn.TextSize = 14.00
-ToggleMenuBtn.Active = true
-ToggleMenuBtn.Draggable = true
+-- Nút Bật/Tắt Menu (Toggle Button)
+ToggleBtn.Name = "ToggleBtn"
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+ToggleBtn.Position = UDim2.new(0.02, 0, 0.15, 0)
+ToggleBtn.Size = UDim2.new(0, 100, 0, 35)
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.Text = "K HUB (ON)"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.TextSize = 16.00
+ToggleBtn.Draggable = true
 
--- Main Frame (Khung menu chính)
+local ToggleCorner = Instance.new("UICorner", ToggleBtn)
+ToggleCorner.CornerRadius = UDim.new(0, 8)
+
+-- Khung Menu Chính
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.BorderSizePixel = 0
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 360, 0, 320)
+MainFrame.Size = UDim2.new(0, 420, 0, 360)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
--- Title Bar
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+
+-- Hiệu ứng Viền Lấp Lánh Cầu Vồng (UIStroke Glow)
+UIStroke.Parent = MainFrame
+UIStroke.Thickness = 3
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+task.spawn(function()
+    local hue = 0
+    while task.wait(0.03) do
+        hue = (hue + 0.01) % 1
+        local rainbowColor = Color3.fromHSV(hue, 0.8, 1)
+        UIStroke.Color = rainbowColor
+        Title.TextColor3 = rainbowColor
+    end
+end)
+
+-- Tiêu đề Menu
 Title.Name = "Title"
 Title.Parent = MainFrame
-Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-Title.BorderSizePixel = 0
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Font = Enum.Font.SourceSansBold
-Title.Text = "FISHING MASTER SCRIPT HUB"
-Title.TextColor3 = Color3.fromRGB(255, 215, 0)
-Title.TextSize = 16.00
+Title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1.000
+Title.Position = UDim2.new(0, 0, 0, 5)
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "✨ K HUB - FISHING MASTER ✨"
+Title.TextSize = 18.00
 
--- Scrolling Container
+-- Danh Sách Cuộn
 ScrollFrame.Name = "ScrollFrame"
 ScrollFrame.Parent = MainFrame
 ScrollFrame.Active = true
-ScrollFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ScrollFrame.BorderSizePixel = 0
-ScrollFrame.Position = UDim2.new(0, 10, 0, 50)
-ScrollFrame.Size = UDim2.new(0, 340, 0, 260)
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 360)
+ScrollFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ScrollFrame.BackgroundTransparency = 1.000
+ScrollFrame.Position = UDim2.new(0.03, 0, 0.13, 0)
+ScrollFrame.Size = UDim2.new(0.94, 0, 0.83, 0)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 380)
 ScrollFrame.ScrollBarThickness = 6
 
 UIListLayout.Parent = ScrollFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 8)
 
--- Danh sách 7 Script theo thứ tự
-local scriptsList = {
-    {name = "1. Oroboros Hub No Key", url = "https://raw.githubusercontent.com/joustingmatch/Ouroboros/main/loader.lua"},
-    {name = "2. Lynx Hub No Key", url = "https://raw.githubusercontent.com/Habibihidayat42/Lynxx/refs/heads/main/LynxHub.lua"},
-    {name = "3. Speed Hub No Key", url = "https://raw.githubusercontent.com/Habibihidayat42/Lynxx/refs/heads/main/LynxHub.lua"},
-    {name = "4. Chloe-X No Key", url = "https://raw.githubusercontent.com/MajestySkie/Chloe-X/main/Main/ChloeX"},
-    {name = "5. Solvex Hub No Key", url = "https://raw.githubusercontent.com/Solvexxxx/Scripts/refs/heads/main/SolvexGUI_FishIt.lua"},
-    {name = "6. Redz Hub No Key", url = "https://raw.githubusercontent.com/REDZ-HUB/FishingMaster/main/NoKey.lua"},
-    {name = "7. Shadow Hub No Key", url = "https://raw.githubusercontent.com/ShadowScript/FishingMaster/main/Main.lua"}
+-- Danh sách 7 Script theo yêu cầu
+local scriptsData = {
+    {num = "1", name = "Oroboros Hub No Key", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/joustingmatch/Ouroboros/main/loader.lua"))()'},
+    {num = "2", name = "Lynx Hub No Key", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/Habibihidayat42/Lynxx/refs/heads/main/LynxHub.lua"))()'},
+    {num = "3", name = "Speed Hub No Key", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/SpeedHubX/SpeedHubX-Roblox/main/FishingMaster.lua"))()'},
+    {num = "4", name = "Chloe-X No Key", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/MajestySkie/Chloe-X/main/Main/ChloeX"))()'},
+    {num = "5", name = "Solvex Hub No Key", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/Solvexxxx/Scripts/refs/heads/main/SolvexGUI_FishIt.lua"))()'},
+    {num = "6", name = "Redz Hub No Key", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/REDZ-HUB/FishingMaster/main/NoKey.lua"))()'},
+    {num = "7", name = "Shadow Hub No Key", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/ShadowScript/FishingMaster/main/Main.lua"))()'}
 }
 
--- Hàm tạo các dòng Script + Nút kích hoạt
-for index, item in ipairs(scriptsList) do
+-- Hàm tạo từng dòng Script + Nút Bật
+for _, data in ipairs(scriptsData) do
     local ItemFrame = Instance.new("Frame")
-    local Label = Instance.new("TextLabel")
-    local RunBtn = Instance.new("TextButton")
+    local ScriptLabel = Instance.new("TextLabel")
+    local RunButton = Instance.new("TextButton")
+    local ItemCorner = Instance.new("UICorner")
 
-    ItemFrame.Name = "ItemFrame_" .. index
+    ItemFrame.Name = "ItemFrame"
     ItemFrame.Parent = ScrollFrame
-    ItemFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    ItemFrame.Size = UDim2.new(1, -10, 0, 40)
+    ItemFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    ItemFrame.Size = UDim2.new(1, -10, 0, 42)
 
-    Label.Name = "Label"
-    Label.Parent = ItemFrame
-    Label.BackgroundTransparency = 1
-    Label.Position = UDim2.new(0, 10, 0, 0)
-    Label.Size = UDim2.new(0.65, 0, 1, 0)
-    Label.Font = Enum.Font.SourceSans
-    Label.Text = item.name
-    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Label.TextSize = 13.00
-    Label.TextXAlignment = Enum.TextXAlignment.Left
+    ItemCorner.CornerRadius = UDim.new(0, 6)
+    ItemCorner.Parent = ItemFrame
 
-    RunBtn.Name = "RunBtn"
-    RunBtn.Parent = ItemFrame
-    RunBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
-    RunBtn.Position = UDim2.new(0.68, 0, 0.15, 0)
-    RunBtn.Size = UDim2.new(0.28, 0, 0.7, 0)
-    RunBtn.Font = Enum.Font.SourceSansBold
-    RunBtn.Text = "Kích Hoạt"
-    RunBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    RunBtn.TextSize = 13.00
+    ScriptLabel.Name = "ScriptLabel"
+    ScriptLabel.Parent = ItemFrame
+    ScriptLabel.BackgroundTransparency = 1.000
+    ScriptLabel.Position = UDim2.new(0.03, 0, 0, 0)
+    ScriptLabel.Size = UDim2.new(0.68, 0, 1, 0)
+    ScriptLabel.Font = Enum.Font.GothamSemibold
+    ScriptLabel.Text = data.num .. ". " .. data.name
+    ScriptLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+    ScriptLabel.TextSize = 13.00
+    ScriptLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Xử lý sự kiện bấm nút kích hoạt
-    RunBtn.MouseButton1Click:Connect(function()
-        RunBtn.Text = "Đang tải..."
-        RunBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 0)
+    RunButton.Name = "RunButton"
+    RunButton.Parent = ItemFrame
+    RunButton.BackgroundColor3 = Color3.fromRGB(40, 160, 90)
+    RunButton.Position = UDim2.new(0.73, 0, 0.15, 0)
+    RunButton.Size = UDim2.new(0.24, 0, 0.7, 0)
+    RunButton.Font = Enum.Font.GothamBold
+    RunButton.Text = "KÍCH HOẠT"
+    RunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    RunButton.TextSize = 11.00
+
+    local BtnCorner = Instance.new("UICorner", RunButton)
+    BtnCorner.CornerRadius = UDim.new(0, 5)
+
+    -- Sự kiện nhấn nút kích hoạt Script
+    RunButton.MouseButton1Click:Connect(function()
+        RunButton.Text = "ĐANG CHẠY..."
+        RunButton.BackgroundColor3 = Color3.fromRGB(200, 140, 30)
         
         task.spawn(function()
             local success, err = pcall(function()
-                loadstring(game:HttpGet(item.url))()
+                loadstring(data.code)()
             end)
             
             if success then
-                RunBtn.Text = "Đã Bật"
-                RunBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+                RunButton.Text = "ĐÃ BẬT ✓"
+                RunButton.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
             else
-                RunBtn.Text = "Thất Bại"
-                RunBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-                warn("Lỗi tải script: " .. tostring(err))
+                RunButton.Text = "LỖI LINK!"
+                RunButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+                warn("Lỗi kích hoạt script: " .. tostring(err))
             end
+            
+            task.wait(2)
+            RunButton.Text = "KÍCH HOẠT"
+            RunButton.BackgroundColor3 = Color3.fromRGB(40, 160, 90)
         end)
     end)
 end
 
--- Chức năng bật/tắt ẩn hiện khung Menu
-ToggleMenuBtn.MouseButton1Click:Connect(function()
+-- Chức năng Nút Bật/Tắt (Toggle) Menu
+ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
+    if MainFrame.Visible then
+        ToggleBtn.Text = "K HUB (ON)"
+        ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    else
+        ToggleBtn.Text = "K HUB (OFF)"
+        ToggleBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+    end
 end)

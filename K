@@ -1,0 +1,129 @@
+-- Create ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local ScrollFrame = Instance.new("ScrollingFrame")
+local UIListLayout = Instance.new("UIListLayout")
+local ToggleMenuBtn = Instance.new("TextButton")
+
+ScreenGui.Parent = game:GetService("CoreGui") or game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+-- Toggle Menu Button (Nút bật/tắt hiển thị menu)
+ToggleMenuBtn.Name = "ToggleMenuBtn"
+ToggleMenuBtn.Parent = ScreenGui
+ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ToggleMenuBtn.Position = UDim2.new(0.02, 0, 0.15, 0)
+ToggleMenuBtn.Size = UDim2.new(0, 100, 0, 35)
+ToggleMenuBtn.Font = Enum.Font.SourceSansBold
+ToggleMenuBtn.Text = "Menu Scripts"
+ToggleMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleMenuBtn.TextSize = 14.00
+ToggleMenuBtn.Active = true
+ToggleMenuBtn.Draggable = true
+
+-- Main Frame (Khung menu chính)
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
+MainFrame.Size = UDim2.new(0, 360, 0, 320)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+-- Title Bar
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Title.BorderSizePixel = 0
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "FISHING MASTER SCRIPT HUB"
+Title.TextColor3 = Color3.fromRGB(255, 215, 0)
+Title.TextSize = 16.00
+
+-- Scrolling Container
+ScrollFrame.Name = "ScrollFrame"
+ScrollFrame.Parent = MainFrame
+ScrollFrame.Active = true
+ScrollFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ScrollFrame.BorderSizePixel = 0
+ScrollFrame.Position = UDim2.new(0, 10, 0, 50)
+ScrollFrame.Size = UDim2.new(0, 340, 0, 260)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 360)
+ScrollFrame.ScrollBarThickness = 6
+
+UIListLayout.Parent = ScrollFrame
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 8)
+
+-- Danh sách 7 Script theo thứ tự
+local scriptsList = {
+    {name = "1. Oroboros Hub No Key", url = "https://raw.githubusercontent.com/joustingmatch/Ouroboros/main/loader.lua"},
+    {name = "2. Lynx Hub No Key", url = "https://raw.githubusercontent.com/Habibihidayat42/Lynxx/refs/heads/main/LynxHub.lua"},
+    {name = "3. Speed Hub No Key", url = "https://raw.githubusercontent.com/Habibihidayat42/Lynxx/refs/heads/main/LynxHub.lua"},
+    {name = "4. Chloe-X No Key", url = "https://raw.githubusercontent.com/MajestySkie/Chloe-X/main/Main/ChloeX"},
+    {name = "5. Solvex Hub No Key", url = "https://raw.githubusercontent.com/Solvexxxx/Scripts/refs/heads/main/SolvexGUI_FishIt.lua"},
+    {name = "6. Redz Hub No Key", url = "https://raw.githubusercontent.com/REDZ-HUB/FishingMaster/main/NoKey.lua"},
+    {name = "7. Shadow Hub No Key", url = "https://raw.githubusercontent.com/ShadowScript/FishingMaster/main/Main.lua"}
+}
+
+-- Hàm tạo các dòng Script + Nút kích hoạt
+for index, item in ipairs(scriptsList) do
+    local ItemFrame = Instance.new("Frame")
+    local Label = Instance.new("TextLabel")
+    local RunBtn = Instance.new("TextButton")
+
+    ItemFrame.Name = "ItemFrame_" .. index
+    ItemFrame.Parent = ScrollFrame
+    ItemFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    ItemFrame.Size = UDim2.new(1, -10, 0, 40)
+
+    Label.Name = "Label"
+    Label.Parent = ItemFrame
+    Label.BackgroundTransparency = 1
+    Label.Position = UDim2.new(0, 10, 0, 0)
+    Label.Size = UDim2.new(0.65, 0, 1, 0)
+    Label.Font = Enum.Font.SourceSans
+    Label.Text = item.name
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.TextSize = 13.00
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    RunBtn.Name = "RunBtn"
+    RunBtn.Parent = ItemFrame
+    RunBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
+    RunBtn.Position = UDim2.new(0.68, 0, 0.15, 0)
+    RunBtn.Size = UDim2.new(0.28, 0, 0.7, 0)
+    RunBtn.Font = Enum.Font.SourceSansBold
+    RunBtn.Text = "Kích Hoạt"
+    RunBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    RunBtn.TextSize = 13.00
+
+    -- Xử lý sự kiện bấm nút kích hoạt
+    RunBtn.MouseButton1Click:Connect(function()
+        RunBtn.Text = "Đang tải..."
+        RunBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 0)
+        
+        task.spawn(function()
+            local success, err = pcall(function()
+                loadstring(game:HttpGet(item.url))()
+            end)
+            
+            if success then
+                RunBtn.Text = "Đã Bật"
+                RunBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+            else
+                RunBtn.Text = "Thất Bại"
+                RunBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+                warn("Lỗi tải script: " .. tostring(err))
+            end
+        end)
+    end)
+end
+
+-- Chức năng bật/tắt ẩn hiện khung Menu
+ToggleMenuBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)

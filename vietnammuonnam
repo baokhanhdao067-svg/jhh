@@ -1,48 +1,34 @@
 -- ================================================================= --
--- BẬC THẦY CÂU CÁ (T GAMING) - COMBINED HUNE HUB & TOCO HUB
--- TỐI ƯU 100% CHO DELTA EXECUTOR (MOBILE & PC)
+-- BẬC THẦY CÂU CÁ (T GAMING) - KAVO UI (FIX BẬT KHÔNG LÊN)
+-- HỖ TRỢ DELTA EXECUTOR MOBILE 100%
 -- ================================================================= --
 
--- Tải Thư viện Orion Library (Chạy cực mượt trên Delta Mobile)
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
-local Window = OrionLib:MakeWindow({
-    Name = "Fishing Master | Hune x Toco Hub 🎣",
-    HidePremium = false,
-    SaveConfig = true,
-    ConfigFolder = "FishingMasterConfig",
-    IntroText = "Hune x Toco Hub Loaded!"
-})
+-- Tải Thư viện Kavo UI (Siêu nhẹ, không lo lỗi không hiện Menu)
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("Fishing Master | Hune x Toco Hub 🎣", "Midnight")
 
--- Service
+-- Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local VirtualUser = game:GetService("VirtualUser")
 local LocalPlayer = Players.LocalPlayer
 
--- Anti-AFK (Chống văng game khi treo máy lâu)
-LocalPlayer.Idled:Connect(function()
-    VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    task.wait(1)
-    VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-end)
-
--- Tạo Nút Bật / Tắt Menu Nổi Dành Cho Điện Thoại (Delta)
+-- Nút Bật/Tắt Menu Nổi Trên Màn Hình (Tránh mất Menu)
 local CoreGui = game:GetService("CoreGui")
-if CoreGui:FindFirstChild("HuneTocoToggle") then
-    CoreGui.HuneTocoToggle:Destroy()
+if CoreGui:FindFirstChild("DeltaFixToggle") then
+    CoreGui.DeltaFixToggle:Destroy()
 end
 
 local ToggleGui = Instance.new("ScreenGui")
-ToggleGui.Name = "HuneTocoToggle"
+ToggleGui.Name = "DeltaFixToggle"
 ToggleGui.Parent = CoreGui
 
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Parent = ToggleGui
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(255, 85, 0)
-ToggleBtn.Position = UDim2.new(0.02, 0, 0.25, 0)
-ToggleBtn.Size = UDim2.new(0, 48, 0, 48)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+ToggleBtn.Position = UDim2.new(0.02, 0, 0.2, 0)
+ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
 ToggleBtn.Text = "🎣"
-ToggleBtn.TextSize = 24
+ToggleBtn.TextSize = 25
 ToggleBtn.Font = Enum.Font.SourceSansBold
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.Active = true
@@ -53,46 +39,28 @@ UICorner.CornerRadius = UDim.new(1, 0)
 UICorner.Parent = ToggleBtn
 
 ToggleBtn.MouseButton1Click:Connect(function()
-    if game:GetService("CoreGui"):FindFirstChild("Orion") then
-        game:GetService("CoreGui").Orion.Enabled = not game:GetService("CoreGui").Orion.Enabled
-    end
+    Library:ToggleUI()
 end)
 
--- ----------------------------------------------------------------- --
--- TAB 1: AUTO FARM (TỰ ĐỘNG CÂU CÁ SIÊU TOC)
--- ----------------------------------------------------------------- --
-local FarmTab = Window:MakeTab({
-    Name = "Auto Farm",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
+-- TAB 1: AUTO FARM
+local FarmTab = Window:NewTab("Auto Farm")
+local FarmSection = FarmTab:NewSection("Tự Động Câu Cá")
 
 _G.AutoCast = false
 _G.AutoReel = false
-_G.FastFish = false
 
-FarmTab:AddToggle({
-    Name = "Auto Cast (Tự Quăng Cần)",
-    Default = false,
-    Callback = function(Value) _G.AutoCast = Value end
-})
+FarmSection:NewToggle("Auto Cast (Quăng Cần)", "Tự động thả cần câu", function(state)
+    _G.AutoCast = state
+end)
 
-FarmTab:AddToggle({
-    Name = "Auto Reel Perfect (Tự Giật Cá Hoàn Hảo)",
-    Default = false,
-    Callback = function(Value) _G.AutoReel = Value end
-})
-
-FarmTab:AddToggle({
-    Name = "Fast Fishing (Câu Cá Siêu Nhanh - Hune x Toco Mode)",
-    Default = false,
-    Callback = function(Value) _G.FastFish = Value end
-})
+FarmSection:NewToggle("Auto Reel (Giật Cá)", "Tự động kéo cá hoàn hảo", function(state)
+    _G.AutoReel = state
+end)
 
 task.spawn(function()
-    while task.wait(0.1) do
+    while task.wait(0.2) do
         pcall(function()
-            if _G.AutoCast or _G.FastFish then
+            if _G.AutoCast then
                 local char = LocalPlayer.Character
                 local tool = char and char:FindFirstChildOfClass("Tool")
                 if tool then
@@ -102,42 +70,26 @@ task.spawn(function()
                     end
                 end
             end
-            
-            if _G.AutoReel or _G.FastFish then
+            if _G.AutoReel then
                 for _, v in pairs(ReplicatedStorage:GetDescendants()) do
-                    if v:IsA("RemoteEvent") and (v.Name:lower():find("reel") or v.Name:lower():find("catch") or v.Name:lower():find("finish")) then
+                    if v:IsA("RemoteEvent") and (v.Name:lower():find("reel") or v.Name:lower():find("catch")) then
                         v:FireServer(100, true)
                     end
                 end
             end
         end)
-        if not _G.FastFish then task.wait(0.3) end
     end
 end)
 
--- ----------------------------------------------------------------- --
--- TAB 2: AUTO QUEST (TỰ ĐỘNG LÀM NHIỆM VỤ & QUÀ)
--- ----------------------------------------------------------------- --
-local QuestTab = Window:MakeTab({
-    Name = "Nhiệm Vụ (Quest)",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
+-- TAB 2: NHIỆM VỤ
+local QuestTab = Window:NewTab("Nhiệm Vụ")
+local QuestSection = QuestTab:NewSection("Auto Quest")
 
 _G.AutoQuest = false
-_G.AutoClaimReward = false
 
-QuestTab:AddToggle({
-    Name = "Auto Quest (Tự Nhận & Trả Nhiệm Vụ NPC)",
-    Default = false,
-    Callback = function(Value) _G.AutoQuest = Value end
-})
-
-QuestTab:AddToggle({
-    Name = "Auto Claim Daily (Tự Nhận Quà Hàng Ngày / Phước)",
-    Default = false,
-    Callback = function(Value) _G.AutoClaimReward = Value end
-})
+QuestSection:NewToggle("Auto Quest (Nhận & Trả Nhiệm Vụ)", "Tự động làm nhiệm vụ NPC", function(state)
+    _G.AutoQuest = state
+end)
 
 task.spawn(function()
     while task.wait(1) do
@@ -160,139 +112,53 @@ task.spawn(function()
                 end
             end)
         end
-        
-        if _G.AutoClaimReward then
-            pcall(function()
-                for _, v in pairs(ReplicatedStorage:GetDescendants()) do
-                    if v:IsA("RemoteEvent") and (v.Name:lower():find("claim") or v.Name:lower():find("reward") or v.Name:lower():find("daily")) then
-                        v:FireServer()
-                    end
-                end
-            end)
-        end
     end
 end)
 
--- ----------------------------------------------------------------- --
--- TAB 3: DỊCH CHUYỂN ĐẢO (ISLAND TELEPORT)
--- ----------------------------------------------------------------- --
-local TeleportTab = Window:MakeTab({
-    Name = "Dịch Chuyển Đảo",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
+-- TAB 3: DỊCH CHUYỂN ĐẢO
+local TeleportTab = Window:NewTab("Dịch Chuyển Đảo")
+local TeleportSection = TeleportTab:NewSection("Các Đảo Trong Game")
 
 local Islands = {
-    ["Đảo Khởi Đầu (Spawn)"] = Vector3.new(0, 15, 0),
+    ["Đảo Khởi Đầu"] = Vector3.new(0, 15, 0),
     ["Đảo Làng Chài"] = Vector3.new(150, 20, -300),
     ["Đảo Tuyết"] = Vector3.new(-800, 25, 500),
     ["Đảo Núi Lửa"] = Vector3.new(1200, 30, -900),
     ["Đảo Bầu Trời"] = Vector3.new(0, 500, 0),
-    ["Đảo Sa Mạc / Cổ Đại"] = Vector3.new(-1500, 20, -1200),
-    ["Đảo Vô Cực / Bí Ẩn"] = Vector3.new(2000, 15, 2000)
+    ["Đảo Cổ Đại"] = Vector3.new(-1500, 20, -1200)
 }
 
-local SelectedIslandPos = Islands["Đảo Khởi Đầu (Spawn)"]
+local SelectedPos = Islands["Đảo Khởi Đầu"]
 
-TeleportTab:AddDropdown({
-    Name = "Chọn Đảo Cần Đến",
-    Default = "Đảo Khởi Đầu (Spawn)",
-    Options = {"Đảo Khởi Đầu (Spawn)", "Đảo Làng Chài", "Đảo Tuyết", "Đảo Núi Lửa", "Đảo Bầu Trời", "Đảo Sa Mạc / Cổ Đại", "Đảo Vô Cực / Bí Ẩn"},
-    Callback = function(Value)
-        if Islands[Value] then SelectedIslandPos = Islands[Value] end
-    end
-})
+TeleportSection:NewDropdown("Chọn Đảo", "Chọn đảo muốn tới", {"Đảo Khởi Đầu", "Đảo Làng Chài", "Đảo Tuyết", "Đảo Núi Lửa", "Đảo Bầu Trời", "Đảo Cổ Đại"}, function(option)
+    if Islands[option] then SelectedPos = Islands[option] end
+end)
 
-TeleportTab:AddButton({
-    Name = "🚀 Dịch Chuyển Ngay Đến Đảo",
-    Callback = function()
-        pcall(function()
-            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                hrp.CFrame = CFrame.new(SelectedIslandPos)
-                OrionLib:MakeNotification({
-                    Name = "Dịch Chuyển",
-                    Content = "Đã tới đảo thành công!",
-                    Time = 2
-                })
+TeleportSection:NewButton("Dịch Chuyển Đến Đảo", "Tới vị trí đảo đã chọn", function()
+    pcall(function()
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.CFrame = CFrame.new(SelectedPos) end
+    end)
+end)
+
+-- TAB 4: BÁN CÁ
+local SellTab = Window:NewTab("Bán Cá")
+local SellSection = SellTab:NewSection("Auto Sell")
+
+SellSection:NewButton("Bán Toàn Bộ Cá Ngay", "Bán nhanh tất cả cá", function()
+    pcall(function()
+        for _, v in pairs(ReplicatedStorage:GetDescendants()) do
+            if v:IsA("RemoteEvent") and (v.Name:lower():find("sell") or v.Name:lower():find("banca")) then
+                v:FireServer()
             end
-        end)
-    end
-})
-
--- ----------------------------------------------------------------- --
--- TAB 4: SHOP & AUTO SELL (BÁN CÁ)
--- ----------------------------------------------------------------- --
-local ShopTab = Window:MakeTab({
-    Name = "Bán Cá & Shop",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-_G.AutoSell = false
-
-ShopTab:AddToggle({
-    Name = "Auto Sell All (Tự Bán Cá Tự Động Mỗi 10s)",
-    Default = false,
-    Callback = function(Value) _G.AutoSell = Value end
-})
-
-ShopTab:AddButton({
-    Name = "Bán Tất Cả Cá Ngay Lập Tức",
-    Callback = function()
-        pcall(function()
-            for _, v in pairs(ReplicatedStorage:GetDescendants()) do
-                if v:IsA("RemoteEvent") and (v.Name:lower():find("sell") or v.Name:lower():find("banca")) then
-                    v:FireServer()
-                end
-            end
-            OrionLib:MakeNotification({ Name = "Thành Công", Content = "Đã bán toàn bộ cá!", Time = 2 })
-        end)
-    end
-})
-
-task.spawn(function()
-    while task.wait(10) do
-        if _G.AutoSell then
-            pcall(function()
-                for _, v in pairs(ReplicatedStorage:GetDescendants()) do
-                    if v:IsA("RemoteEvent") and (v.Name:lower():find("sell") or v.Name:lower():find("banca")) then
-                        v:FireServer()
-                    end
-                end
-            end)
         end
-    end
+    end)
 end)
 
--- ----------------------------------------------------------------- --
--- TAB 5: NHÂN VẬT & TIỆN ÍCH
--- ----------------------------------------------------------------- --
-local PlayerTab = Window:MakeTab({
-    Name = "Nhân Vật",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
+-- TAB 5: NHÂN VẬT
+local PlayerTab = Window:NewTab("Nhân Vật")
+local PlayerSection = PlayerTab:NewSection("Cài Đặt")
 
-PlayerTab:AddSlider({
-    Name = "Tốc Độ Chạy (WalkSpeed)",
-    Min = 16, Max = 300, Default = 16, Increment = 1,
-    Callback = function(Value)
-        pcall(function() LocalPlayer.Character.Humanoid.WalkSpeed = Value end)
-    end
-})
-
-_G.InfJump = false
-PlayerTab:AddToggle({
-    Name = "Infinite Jump (Nhảy Vô Hạn)",
-    Default = false,
-    Callback = function(Value) _G.InfJump = Value end
-})
-
-game:GetService("UserInputService").JumpRequest:Connect(function()
-    if _G.InfJump then
-        pcall(function() LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping") end)
-    end
+PlayerSection:NewSlider("Tốc Độ Chạy", "Chỉnh WalkSpeed", 300, 16, function(s)
+    pcall(function() LocalPlayer.Character.Humanoid.WalkSpeed = s end)
 end)
-
-OrionLib:Init()

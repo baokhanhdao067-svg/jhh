@@ -119,12 +119,12 @@ end
 NoKeyScroll = createScrollFrame("NoKeyScroll")
 KeyScroll = createScrollFrame("KeyScroll")
 
-NoKeyScroll.Visible = true -- Mặc định hiện Tab No Key
+NoKeyScroll.Visible = true
 
--- Dữ liệu 2 Mục Script
+-- Danh Sách Script Đã Cập Nhật
 local noKeyScripts = {
     {num = "1", name = "Toco Hub (No Key)", url = "https://raw.githubusercontent.com/TocoL/TocoHub/main/FishingMaster.lua"},
-    {num = "2", name = "NNVN Hub (No Key)", url = "https://raw.githubusercontent.com/NNVN-Hub/Roblox-Scripts/main/FishingMaster.lua"}
+    {num = "2", name = "Ouroboros Hub (No Key)", url = "https://raw.githubusercontent.com/joustingmatch/Ouroboros/main/loader.lua"}
 }
 
 local keyScripts = {
@@ -132,7 +132,7 @@ local keyScripts = {
     {num = "2", name = "Hune Hub (Có Key)", url = "https://hune205.dev/api/v5/files/6a0949ca41406c5e219e2845.lua"}
 }
 
--- Hàm đổ dữ liệu các nút Script vào danh sách
+-- Hàm tạo các dòng Script
 local function buildList(scroll, dataList)
     for _, data in ipairs(dataList) do
         local ItemFrame = Instance.new("Frame")
@@ -191,11 +191,10 @@ local function buildList(scroll, dataList)
     end
 end
 
--- Tạo danh sách
 buildList(NoKeyScroll, noKeyScripts)
 buildList(KeyScroll, keyScripts)
 
--- Sự kiện chuyển đổi giữa các Tab
+-- Sự kiện chuyển đổi Tab
 NoKeyTabBtn.MouseButton1Click:Connect(function()
     NoKeyScroll.Visible = true
     KeyScroll.Visible = false

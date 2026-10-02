@@ -138,6 +138,11 @@ KeyScroll = createScrollFrame("KeyScroll")
 -- Mặc định mở Tab CÓ KEY
 KeyScroll.Visible = true
 
+-- Dữ Liệu Script NO KEY
+local noKeyScripts = {
+    {num = "1", name = "YOKUDO", url = "https://raw.githubusercontent.com/betdoyvaka/stealanegg/main/Loader.lua"}
+}
+
 -- Dữ Liệu Script CÓ KEY
 local keyScripts = {
     {num = "1", name = "ZEROIN", url = "https://zeroinhub.com/api/script"},
@@ -147,8 +152,6 @@ local keyScripts = {
     {num = "5", name = "FYY HUB", url = "https://FyyCommunity.my.id"},
     {num = "6", name = "BIG FROOT HUB", url = "https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"}
 }
-
-local noKeyScripts = {}
 
 -- Hàm Build Danh Sách Script
 local function buildList(scroll, dataList)

@@ -120,7 +120,7 @@ local function createScrollFrame(name)
     sf.BackgroundTransparency = 1.000
     sf.Position = UDim2.new(0.03, 0, 0.25, 0)
     sf.Size = UDim2.new(0.94, 0, 0.71, 0)
-    sf.CanvasSize = UDim2.new(0, 0, 0, 280)
+    sf.CanvasSize = UDim2.new(0, 0, 0, 320)
     sf.ScrollBarThickness = 6
     sf.Visible = false
 
@@ -140,8 +140,7 @@ KeyScroll.Visible = true
 
 -- Dữ Liệu Script NO KEY
 local noKeyScripts = {
-    {num = "1", name = "YOKUDO", url = "https://raw.githubusercontent.com/betdoyvaka/stealanegg/main/Loader.lua"},
-    {num = "2", name = "REALKID TIẾNG VIỆT", url = "https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"}
+    {num = "1", name = "YOKUDO", url = "https://raw.githubusercontent.com/betdoyvaka/stealanegg/main/Loader.lua"}
 }
 
 -- Dữ Liệu Script CÓ KEY
@@ -151,7 +150,8 @@ local keyScripts = {
     {num = "3", name = "CLOVER HUB", url = "https://cloverhub.app/clover.lua"},
     {num = "4", name = "NASI RENDANG", url = "https://raw.githubusercontent.com/JualNasiRendang/loader/refs/heads/main/main.lua"},
     {num = "5", name = "FYY HUB", url = "https://FyyCommunity.my.id"},
-    {num = "6", name = "BIG FROOT HUB", url = "https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"}
+    {num = "6", name = "BIG FROOT HUB", url = "https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"},
+    {num = "7", name = "REALKID TIẾNG VIỆT", url = "https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"}
 }
 
 -- Hàm Build Danh Sách Script

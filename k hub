@@ -140,7 +140,8 @@ KeyScroll.Visible = true
 
 -- Dữ Liệu Script NO KEY
 local noKeyScripts = {
-    {num = "1", name = "YOKUDO", url = "https://raw.githubusercontent.com/betdoyvaka/stealanegg/main/Loader.lua"}
+    {num = "1", name = "YOKUDO", url = "https://raw.githubusercontent.com/betdoyvaka/stealanegg/main/Loader.lua"},
+    {num = "2", name = "REALKID TIẾNG VIỆT", url = "https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"}
 }
 
 -- Dữ Liệu Script CÓ KEY

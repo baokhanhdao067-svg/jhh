@@ -22,18 +22,23 @@ ScreenGui.Name = "KHUB_StealAnEgg"
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
 
--- Nút Bật/Tắt Menu (Toggle Button)
+-- Nút Bật/Tắt Menu (Toggle Button - Đổi chữ thành K HUB, có viền 7 màu nhấp nháy)
 ToggleBtn.Name = "ToggleBtn"
 ToggleBtn.Parent = ScreenGui
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 ToggleBtn.Position = UDim2.new(0.02, 0, 0.15, 0)
 ToggleBtn.Size = UDim2.new(0, 110, 0, 35)
 ToggleBtn.Font = Enum.Font.SourceSansBold
-ToggleBtn.Text = "K HUB (ON)"
+ToggleBtn.Text = "K HUB"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.TextSize = 16.00
 ToggleBtn.Draggable = true
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 8)
+
+local ToggleStroke = Instance.new("UIStroke")
+ToggleStroke.Parent = ToggleBtn
+ToggleStroke.Thickness = 2
+ToggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 -- Khung Menu Chính
 MainFrame.Name = "MainFrame"
@@ -43,20 +48,36 @@ MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
 MainFrame.Size = UDim2.new(0, 440, 0, 330)
 MainFrame.Active = true
 MainFrame.Draggable = true
+MainFrame.ClipsDescendants = true
 UICorner.CornerRadius = UDim.new(0, 12)
 UICorner.Parent = MainFrame
 
--- Viền Cầu Vồng Lấp Lánh
+-- Hình nền Zoro bên trong Menu
+local BackgroundImage = Instance.new("ImageLabel")
+BackgroundImage.Name = "BackgroundImage"
+BackgroundImage.Parent = MainFrame
+BackgroundImage.BackgroundTransparency = 1.000
+BackgroundImage.Position = UDim2.new(0, 0, 0, 0)
+BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
+BackgroundImage.Image = "rbxassetid://13511142512"
+BackgroundImage.ImageTransparency = 0.55 -- Độ mờ để dễ nhìn chữ
+BackgroundImage.ScaleType = Enum.ScaleType.Crop
+
+-- Viền Cầu Vồng 7 Màu Nhấp Nháy Cho MainFrame và ToggleBtn
 UIStroke.Parent = MainFrame
 UIStroke.Thickness = 3
 UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 task.spawn(function()
     local hue = 0
-    while task.wait(0.03) do
+    while task.wait(0.02) do
         hue = (hue + 0.01) % 1
-        local rainbowColor = Color3.fromHSV(hue, 0.8, 1)
+        -- Tạo hiệu ứng nhấp nháy sáng tối nhẹ kết hợp xoay màu
+        local flashVal = 0.7 + 0.3 * math.sin(tick() * 10)
+        local rainbowColor = Color3.fromHSV(hue, 0.9, flashVal)
+        
         UIStroke.Color = rainbowColor
+        ToggleStroke.Color = rainbowColor
         Title.TextColor3 = rainbowColor
     end
 end)
@@ -81,6 +102,7 @@ TabContainer.Size = UDim2.new(0.96, 0, 0, 32)
 NoKeyTabBtn.Name = "NoKeyTabBtn"
 NoKeyTabBtn.Parent = TabContainer
 NoKeyTabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+NoKeyTabBtn.BackgroundTransparency = 0.2
 NoKeyTabBtn.Position = UDim2.new(0, 0, 0, 0)
 NoKeyTabBtn.Size = UDim2.new(0.32, 0, 1, 0)
 NoKeyTabBtn.Font = Enum.Font.GothamBold
@@ -92,6 +114,7 @@ Instance.new("UICorner", NoKeyTabBtn).CornerRadius = UDim.new(0, 6)
 KeyTabBtn.Name = "KeyTabBtn"
 KeyTabBtn.Parent = TabContainer
 KeyTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+KeyTabBtn.BackgroundTransparency = 0.2
 KeyTabBtn.Position = UDim2.new(0.34, 0, 0, 0)
 KeyTabBtn.Size = UDim2.new(0.32, 0, 1, 0)
 KeyTabBtn.Font = Enum.Font.GothamBold
@@ -103,6 +126,7 @@ Instance.new("UICorner", KeyTabBtn).CornerRadius = UDim.new(0, 6)
 ServerHopTabBtn.Name = "ServerHopTabBtn"
 ServerHopTabBtn.Parent = TabContainer
 ServerHopTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+ServerHopTabBtn.BackgroundTransparency = 0.2
 ServerHopTabBtn.Position = UDim2.new(0.68, 0, 0, 0)
 ServerHopTabBtn.Size = UDim2.new(0.32, 0, 1, 0)
 ServerHopTabBtn.Font = Enum.Font.GothamBold
@@ -137,14 +161,14 @@ KeyScroll = createScrollFrame("KeyScroll")
 
 NoKeyScroll.Visible = true
 
--- Dữ Liệu Script NO KEY (Không có Sys)
+-- Dữ Liệu Script NO KEY
 local noKeyScripts = {
     {num = "1", name = "PLUSE HUB", url = "https://raw.githubusercontent.com/IlikeRBLX/Pluse/refs/heads/main/StealAnEgg.lua"},
     {num = "2", name = "CHILI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
     {num = "3", name = "LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"}
 }
 
--- Dữ Liệu Script CÓ KEY (Đã thêm Sys Hub vào đầu)
+-- Dữ Liệu Script CÓ KEY
 local keyScripts = {
     {num = "1", name = "SYS HUB", url = "https://syshub.fun/free"},
     {num = "2", name = "ZEROIN", url = "https://zeroinhub.com/api/script"},
@@ -165,7 +189,8 @@ local function buildList(scroll, dataList)
 
         ItemFrame.Name = "ItemFrame"
         ItemFrame.Parent = scroll
-        ItemFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+        ItemFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+        ItemFrame.BackgroundTransparency = 0.2
         ItemFrame.Size = UDim2.new(1, -10, 0, 42)
         Instance.new("UICorner", ItemFrame).CornerRadius = UDim.new(0, 6)
 
@@ -242,6 +267,7 @@ PlayerInputLabel.TextXAlignment = Enum.TextXAlignment.Left
 local PlayerInput = Instance.new("TextBox")
 PlayerInput.Parent = ServerHopFrame
 PlayerInput.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
+PlayerInput.BackgroundTransparency = 0.2
 PlayerInput.Position = UDim2.new(0.62, 0, 0.05, 0)
 PlayerInput.Size = UDim2.new(0.35, 0, 0, 30)
 PlayerInput.Font = Enum.Font.GothamBold
@@ -347,9 +373,7 @@ ServerHopTabBtn.MouseButton1Click:Connect(function()
     KeyTabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
 end)
 
--- Nút Ẩn/Hiện Menu
+-- Nút Ẩn/Hiện Menu (Giữ chữ K HUB cố định)
 ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
-    ToggleBtn.Text = MainFrame.Visible and "K HUB (ON)" or "K HUB (OFF)"
-    ToggleBtn.TextColor3 = MainFrame.Visible and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 150, 150)
 end)

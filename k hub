@@ -120,7 +120,7 @@ local function createScrollFrame(name)
     sf.BackgroundTransparency = 1.000
     sf.Position = UDim2.new(0.03, 0, 0.25, 0)
     sf.Size = UDim2.new(0.94, 0, 0.71, 0)
-    sf.CanvasSize = UDim2.new(0, 0, 0, 320)
+    sf.CanvasSize = UDim2.new(0, 0, 0, 350)
     sf.ScrollBarThickness = 6
     sf.Visible = false
 
@@ -137,23 +137,23 @@ KeyScroll = createScrollFrame("KeyScroll")
 
 NoKeyScroll.Visible = true
 
--- Dữ Liệu Script NO KEY (Cập nhật Pluse & Sys Hub)
+-- Dữ Liệu Script NO KEY (Không có Sys)
 local noKeyScripts = {
     {num = "1", name = "PLUSE HUB", url = "https://raw.githubusercontent.com/IlikeRBLX/Pluse/refs/heads/main/StealAnEgg.lua"},
-    {num = "2", name = "SYS HUB", url = "https://syshub.fun/free"},
-    {num = "3", name = "CHILI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
-    {num = "4", name = "LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"}
+    {num = "2", name = "CHILI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
+    {num = "3", name = "LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"}
 }
 
--- Dữ Liệu Script CÓ KEY
+-- Dữ Liệu Script CÓ KEY (Đã thêm Sys Hub vào đầu)
 local keyScripts = {
-    {num = "1", name = "ZEROIN", url = "https://zeroinhub.com/api/script"},
-    {num = "2", name = "AJJAN", url = "https://api.luarmor.net/files/v4/loaders/359e97f8618e9008afe5f496184ebb7c.lua"},
-    {num = "3", name = "CLOVER HUB", url = "https://cloverhub.app/clover.lua"},
-    {num = "4", name = "NASI RENDANG", url = "https://raw.githubusercontent.com/JualNasiRendang/loader/refs/heads/main/main.lua"},
-    {num = "5", name = "FYY HUB", url = "https://FyyCommunity.my.id"},
-    {num = "6", name = "BIG FROOT HUB", url = "https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"},
-    {num = "7", name = "REALKID TIẾNG VIỆT", url = "https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"}
+    {num = "1", name = "SYS HUB", url = "https://syshub.fun/free"},
+    {num = "2", name = "ZEROIN", url = "https://zeroinhub.com/api/script"},
+    {num = "3", name = "AJJAN", url = "https://api.luarmor.net/files/v4/loaders/359e97f8618e9008afe5f496184ebb7c.lua"},
+    {num = "4", name = "CLOVER HUB", url = "https://cloverhub.app/clover.lua"},
+    {num = "5", name = "NASI RENDANG", url = "https://raw.githubusercontent.com/JualNasiRendang/loader/refs/heads/main/main.lua"},
+    {num = "6", name = "FYY HUB", url = "https://FyyCommunity.my.id"},
+    {num = "7", name = "BIG FROOT HUB", url = "https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"},
+    {num = "8", name = "REALKID TIẾNG VIỆT", url = "https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"}
 }
 
 -- Hàm Build Danh Sách Script

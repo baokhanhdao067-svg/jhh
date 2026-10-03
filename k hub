@@ -59,8 +59,8 @@ BackgroundImage.Parent = MainFrame
 BackgroundImage.BackgroundTransparency = 1.000
 BackgroundImage.Position = UDim2.new(0, 0, 0, 0)
 BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
-BackgroundImage.Image = "rbxassetid://13511142512"
-BackgroundImage.ImageTransparency = 0.55
+BackgroundImage.Image = "http://www.roblox.com/asset/?id=13511142512"
+BackgroundImage.ImageTransparency = 0.3
 BackgroundImage.ScaleType = Enum.ScaleType.Crop
 
 -- Viền Cầu Vồng 7 Màu Nhấp Nháy
@@ -101,7 +101,7 @@ TabContainer.Size = UDim2.new(0.96, 0, 0, 32)
 NoKeyTabBtn.Name = "NoKeyTabBtn"
 NoKeyTabBtn.Parent = TabContainer
 NoKeyTabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-NoKeyTabBtn.BackgroundTransparency = 0.2
+NoKeyTabBtn.BackgroundTransparency = 0.3
 NoKeyTabBtn.Position = UDim2.new(0, 0, 0, 0)
 NoKeyTabBtn.Size = UDim2.new(0.32, 0, 1, 0)
 NoKeyTabBtn.Font = Enum.Font.GothamBold
@@ -113,7 +113,7 @@ Instance.new("UICorner", NoKeyTabBtn).CornerRadius = UDim.new(0, 6)
 KeyTabBtn.Name = "KeyTabBtn"
 KeyTabBtn.Parent = TabContainer
 KeyTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-KeyTabBtn.BackgroundTransparency = 0.2
+KeyTabBtn.BackgroundTransparency = 0.3
 KeyTabBtn.Position = UDim2.new(0.34, 0, 0, 0)
 KeyTabBtn.Size = UDim2.new(0.32, 0, 1, 0)
 KeyTabBtn.Font = Enum.Font.GothamBold
@@ -125,7 +125,7 @@ Instance.new("UICorner", KeyTabBtn).CornerRadius = UDim.new(0, 6)
 ServerHopTabBtn.Name = "ServerHopTabBtn"
 ServerHopTabBtn.Parent = TabContainer
 ServerHopTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-ServerHopTabBtn.BackgroundTransparency = 0.2
+ServerHopTabBtn.BackgroundTransparency = 0.3
 ServerHopTabBtn.Position = UDim2.new(0.68, 0, 0, 0)
 ServerHopTabBtn.Size = UDim2.new(0.32, 0, 1, 0)
 ServerHopTabBtn.Font = Enum.Font.GothamBold
@@ -160,24 +160,24 @@ KeyScroll = createScrollFrame("KeyScroll")
 
 NoKeyScroll.Visible = true
 
--- Dữ Liệu Script NO KEY (Đã chuyển ZEROIN qua & thêm Pulse Zax)
+-- Dữ Liệu Script NO KEY (Đã chuyển Limbo Hub qua đây)
 local noKeyScripts = {
-    {num = "1", name = "ZEROIN", url = "https://zeroinhub.com/api/script"},
-    {num = "2", name = "PULSE ZAX", url = "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua"},
-    {num = "3", name = "CHILI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
-    {num = "4", name = "LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"}
+    {num = "1", name = "LIMBO HUB", url = "https://limbohub.my.id/loader.lua"},
+    {num = "2", name = "ZEROIN", url = "https://zeroinhub.com/api/script"},
+    {num = "3", name = "PULSE ZAX", url = "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua"},
+    {num = "4", name = "CHILI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
+    {num = "5", name = "LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"}
 }
 
--- Dữ Liệu Script CÓ KEY (Đã thêm LIMBO HUB & bỏ Pluse)
+-- Dữ Liệu Script CÓ KEY
 local keyScripts = {
-    {num = "1", name = "LIMBO HUB", url = "https://limbohub.my.id/loader.lua"},
-    {num = "2", name = "SYS HUB", url = "https://syshub.fun/free"},
-    {num = "3", name = "AJJAN", url = "https://api.luarmor.net/files/v4/loaders/359e97f8618e9008afe5f496184ebb7c.lua"},
-    {num = "4", name = "CLOVER HUB", url = "https://cloverhub.app/clover.lua"},
-    {num = "5", name = "NASI RENDANG", url = "https://raw.githubusercontent.com/JualNasiRendang/loader/refs/heads/main/main.lua"},
-    {num = "6", name = "FYY HUB", url = "https://FyyCommunity.my.id"},
-    {num = "7", name = "BIG FROOT HUB", url = "https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"},
-    {num = "8", name = "REALKID TIẾNG VIỆT", url = "https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"}
+    {num = "1", name = "SYS HUB", url = "https://syshub.fun/free"},
+    {num = "2", name = "AJJAN", url = "https://api.luarmor.net/files/v4/loaders/359e97f8618e9008afe5f496184ebb7c.lua"},
+    {num = "3", name = "CLOVER HUB", url = "https://cloverhub.app/clover.lua"},
+    {num = "4", name = "NASI RENDANG", url = "https://raw.githubusercontent.com/JualNasiRendang/loader/refs/heads/main/main.lua"},
+    {num = "5", name = "FYY HUB", url = "https://FyyCommunity.my.id"},
+    {num = "6", name = "BIG FROOT HUB", url = "https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"},
+    {num = "7", name = "REALKID TIẾNG VIỆT", url = "https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"}
 }
 
 -- Hàm Build Danh Sách Script
@@ -190,7 +190,7 @@ local function buildList(scroll, dataList)
         ItemFrame.Name = "ItemFrame"
         ItemFrame.Parent = scroll
         ItemFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-        ItemFrame.BackgroundTransparency = 0.2
+        ItemFrame.BackgroundTransparency = 0.3
         ItemFrame.Size = UDim2.new(1, -10, 0, 42)
         Instance.new("UICorner", ItemFrame).CornerRadius = UDim.new(0, 6)
 
@@ -267,7 +267,7 @@ PlayerInputLabel.TextXAlignment = Enum.TextXAlignment.Left
 local PlayerInput = Instance.new("TextBox")
 PlayerInput.Parent = ServerHopFrame
 PlayerInput.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
-PlayerInput.BackgroundTransparency = 0.2
+PlayerInput.BackgroundTransparency = 0.3
 PlayerInput.Position = UDim2.new(0.62, 0, 0.05, 0)
 PlayerInput.Size = UDim2.new(0.35, 0, 0, 30)
 PlayerInput.Font = Enum.Font.GothamBold

@@ -71,7 +71,7 @@ Title.Font = Enum.Font.GothamBold
 Title.Text = "✨ K HUB - GAME STEAL AN EGG ✨"
 Title.TextSize = 15.00
 
--- Thanh Chuyển Tab (3 Tab)
+-- Thanh Chuyển Tab
 TabContainer.Name = "TabContainer"
 TabContainer.Parent = MainFrame
 TabContainer.BackgroundTransparency = 1.000
@@ -80,23 +80,23 @@ TabContainer.Size = UDim2.new(0.96, 0, 0, 32)
 
 NoKeyTabBtn.Name = "NoKeyTabBtn"
 NoKeyTabBtn.Parent = TabContainer
-NoKeyTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+NoKeyTabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
 NoKeyTabBtn.Position = UDim2.new(0, 0, 0, 0)
 NoKeyTabBtn.Size = UDim2.new(0.32, 0, 1, 0)
 NoKeyTabBtn.Font = Enum.Font.GothamBold
 NoKeyTabBtn.Text = "🔓 NO KEY"
-NoKeyTabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+NoKeyTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 NoKeyTabBtn.TextSize = 11.00
 Instance.new("UICorner", NoKeyTabBtn).CornerRadius = UDim.new(0, 6)
 
 KeyTabBtn.Name = "KeyTabBtn"
 KeyTabBtn.Parent = TabContainer
-KeyTabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+KeyTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 KeyTabBtn.Position = UDim2.new(0.34, 0, 0, 0)
 KeyTabBtn.Size = UDim2.new(0.32, 0, 1, 0)
 KeyTabBtn.Font = Enum.Font.GothamBold
 KeyTabBtn.Text = "🔑 CÓ KEY"
-KeyTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyTabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
 KeyTabBtn.TextSize = 11.00
 Instance.new("UICorner", KeyTabBtn).CornerRadius = UDim.new(0, 6)
 
@@ -111,7 +111,7 @@ ServerHopTabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
 ServerHopTabBtn.TextSize = 11.00
 Instance.new("UICorner", ServerHopTabBtn).CornerRadius = UDim.new(0, 6)
 
--- Hàm Khởi Tạo Khung Cuộn Danh Sách
+-- Hàm Khởi Tạo Khung Cuộn
 local function createScrollFrame(name)
     local sf = Instance.new("ScrollingFrame")
     sf.Name = name
@@ -135,12 +135,14 @@ end
 NoKeyScroll = createScrollFrame("NoKeyScroll")
 KeyScroll = createScrollFrame("KeyScroll")
 
--- Mặc định mở Tab CÓ KEY
-KeyScroll.Visible = true
+NoKeyScroll.Visible = true
 
--- Dữ Liệu Script NO KEY
+-- Dữ Liệu Script NO KEY (Cập nhật Pluse & Sys Hub)
 local noKeyScripts = {
-    {num = "1", name = "YOKUDO", url = "https://raw.githubusercontent.com/betdoyvaka/stealanegg/main/Loader.lua"}
+    {num = "1", name = "PLUSE HUB", url = "https://raw.githubusercontent.com/IlikeRBLX/Pluse/refs/heads/main/StealAnEgg.lua"},
+    {num = "2", name = "SYS HUB", url = "https://syshub.fun/free"},
+    {num = "3", name = "CHILI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
+    {num = "4", name = "LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"}
 }
 
 -- Dữ Liệu Script CÓ KEY
@@ -194,7 +196,7 @@ local function buildList(scroll, dataList)
             RunButton.BackgroundColor3 = Color3.fromRGB(200, 140, 30)
             task.spawn(function()
                 local success, err = pcall(function()
-                    local rawCode = game:HttpGet(data.url)
+                    local rawCode = game:HttpGet(data.url, true)
                     loadstring(rawCode)()
                 end)
                 if success then
@@ -217,7 +219,7 @@ buildList(KeyScroll, keyScripts)
 buildList(NoKeyScroll, noKeyScripts)
 
 ----------------------------------------------------
--- TẠO GIAO DIỆN TAB SERVER HOP
+-- GIAO DIỆN TAB SERVER HOP
 ----------------------------------------------------
 ServerHopFrame.Name = "ServerHopFrame"
 ServerHopFrame.Parent = MainFrame
@@ -226,7 +228,6 @@ ServerHopFrame.Position = UDim2.new(0.03, 0, 0.25, 0)
 ServerHopFrame.Size = UDim2.new(0.94, 0, 0.71, 0)
 ServerHopFrame.Visible = false
 
--- Nhãn Nhập Số Người
 local PlayerInputLabel = Instance.new("TextLabel")
 PlayerInputLabel.Parent = ServerHopFrame
 PlayerInputLabel.BackgroundTransparency = 1.000
@@ -238,7 +239,6 @@ PlayerInputLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
 PlayerInputLabel.TextSize = 12.00
 PlayerInputLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Ô Nhập Số Người (TextBox)
 local PlayerInput = Instance.new("TextBox")
 PlayerInput.Parent = ServerHopFrame
 PlayerInput.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
@@ -250,7 +250,6 @@ PlayerInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 PlayerInput.TextSize = 13.00
 Instance.new("UICorner", PlayerInput).CornerRadius = UDim.new(0, 6)
 
--- Nút Hop Server 1 Lần
 local HopButton = Instance.new("TextButton")
 HopButton.Parent = ServerHopFrame
 HopButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
@@ -262,7 +261,6 @@ HopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 HopButton.TextSize = 13.00
 Instance.new("UICorner", HopButton).CornerRadius = UDim.new(0, 6)
 
--- Nút Bật/Tắt Auto Hop
 local AutoHopButton = Instance.new("TextButton")
 AutoHopButton.Parent = ServerHopFrame
 AutoHopButton.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
@@ -274,7 +272,6 @@ AutoHopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 AutoHopButton.TextSize = 13.00
 Instance.new("UICorner", AutoHopButton).CornerRadius = UDim.new(0, 6)
 
--- Xử lý Logic Hop & Auto Hop
 _G.AutoHopEnabled = false
 _G.MaxPlayersHop = 1
 
@@ -309,7 +306,7 @@ AutoHopButton.MouseButton1Click:Connect(function()
 end)
 
 ----------------------------------------------------
--- XỬ LÝ CHUYỂN TAB GIAO DIỆN
+-- CHUYỂN TAB GIAO DIỆN
 ----------------------------------------------------
 NoKeyTabBtn.MouseButton1Click:Connect(function()
     NoKeyScroll.Visible = true
@@ -350,7 +347,7 @@ ServerHopTabBtn.MouseButton1Click:Connect(function()
     KeyTabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
 end)
 
--- Nút Ẩn/Hiện Menu K HUB
+-- Nút Ẩn/Hiện Menu
 ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
     ToggleBtn.Text = MainFrame.Visible and "K HUB (ON)" or "K HUB (OFF)"

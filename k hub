@@ -143,7 +143,7 @@ local function createScrollFrame(name)
     sf.BackgroundTransparency = 1.000
     sf.Position = UDim2.new(0.03, 0, 0.25, 0)
     sf.Size = UDim2.new(0.94, 0, 0.71, 0)
-    sf.CanvasSize = UDim2.new(0, 0, 0, 350)
+    sf.CanvasSize = UDim2.new(0, 0, 0, 380)
     sf.ScrollBarThickness = 6
     sf.Visible = false
 
@@ -160,13 +160,14 @@ KeyScroll = createScrollFrame("KeyScroll")
 
 NoKeyScroll.Visible = true
 
--- Dữ Liệu Script NO KEY (Đã chuyển Limbo Hub qua đây)
+-- Dữ Liệu Script NO KEY (Đã cập nhật link FOX NAME mới)
 local noKeyScripts = {
-    {num = "1", name = "LIMBO HUB", url = "https://limbohub.my.id/loader.lua"},
-    {num = "2", name = "ZEROIN", url = "https://zeroinhub.com/api/script"},
-    {num = "3", name = "PULSE ZAX", url = "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua"},
-    {num = "4", name = "CHILI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
-    {num = "5", name = "LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"}
+    {num = "1", name = "FOX NAME", url = "https://raw.githubusercontent.com/caomod2077/Script/refs/heads/main/Fn-stealanegg.lua"},
+    {num = "2", name = "LIMBO HUB", url = "https://limbohub.my.id/loader.lua"},
+    {num = "3", name = "ZEROIN", url = "https://zeroinhub.com/api/script"},
+    {num = "4", name = "PULSE ZAX", url = "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua"},
+    {num = "5", name = "CHILI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
+    {num = "6", name = "LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"}
 }
 
 -- Dữ Liệu Script CÓ KEY

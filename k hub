@@ -22,7 +22,7 @@ ScreenGui.Name = "KHUB_StealAnEgg"
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
 
--- Nút Bật/Tắt Menu (Toggle Button - Đổi chữ thành K HUB, có viền 7 màu nhấp nháy)
+-- Nút Bật/Tắt Menu (Toggle Button - Chữ K HUB, viền RGB 7 màu)
 ToggleBtn.Name = "ToggleBtn"
 ToggleBtn.Parent = ScreenGui
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
@@ -60,10 +60,10 @@ BackgroundImage.BackgroundTransparency = 1.000
 BackgroundImage.Position = UDim2.new(0, 0, 0, 0)
 BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
 BackgroundImage.Image = "rbxassetid://13511142512"
-BackgroundImage.ImageTransparency = 0.55 -- Độ mờ để dễ nhìn chữ
+BackgroundImage.ImageTransparency = 0.55
 BackgroundImage.ScaleType = Enum.ScaleType.Crop
 
--- Viền Cầu Vồng 7 Màu Nhấp Nháy Cho MainFrame và ToggleBtn
+-- Viền Cầu Vồng 7 Màu Nhấp Nháy
 UIStroke.Parent = MainFrame
 UIStroke.Thickness = 3
 UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
@@ -72,7 +72,6 @@ task.spawn(function()
     local hue = 0
     while task.wait(0.02) do
         hue = (hue + 0.01) % 1
-        -- Tạo hiệu ứng nhấp nháy sáng tối nhẹ kết hợp xoay màu
         local flashVal = 0.7 + 0.3 * math.sin(tick() * 10)
         local rainbowColor = Color3.fromHSV(hue, 0.9, flashVal)
         
@@ -161,17 +160,18 @@ KeyScroll = createScrollFrame("KeyScroll")
 
 NoKeyScroll.Visible = true
 
--- Dữ Liệu Script NO KEY
+-- Dữ Liệu Script NO KEY (Đã chuyển ZEROIN qua & thêm Pulse Zax)
 local noKeyScripts = {
-    {num = "1", name = "PLUSE HUB", url = "https://raw.githubusercontent.com/IlikeRBLX/Pluse/refs/heads/main/StealAnEgg.lua"},
-    {num = "2", name = "CHILI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
-    {num = "3", name = "LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"}
+    {num = "1", name = "ZEROIN", url = "https://zeroinhub.com/api/script"},
+    {num = "2", name = "PULSE ZAX", url = "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua"},
+    {num = "3", name = "CHILI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
+    {num = "4", name = "LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"}
 }
 
--- Dữ Liệu Script CÓ KEY
+-- Dữ Liệu Script CÓ KEY (Đã thêm LIMBO HUB & bỏ Pluse)
 local keyScripts = {
-    {num = "1", name = "SYS HUB", url = "https://syshub.fun/free"},
-    {num = "2", name = "ZEROIN", url = "https://zeroinhub.com/api/script"},
+    {num = "1", name = "LIMBO HUB", url = "https://limbohub.my.id/loader.lua"},
+    {num = "2", name = "SYS HUB", url = "https://syshub.fun/free"},
     {num = "3", name = "AJJAN", url = "https://api.luarmor.net/files/v4/loaders/359e97f8618e9008afe5f496184ebb7c.lua"},
     {num = "4", name = "CLOVER HUB", url = "https://cloverhub.app/clover.lua"},
     {num = "5", name = "NASI RENDANG", url = "https://raw.githubusercontent.com/JualNasiRendang/loader/refs/heads/main/main.lua"},
@@ -373,7 +373,7 @@ ServerHopTabBtn.MouseButton1Click:Connect(function()
     KeyTabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
 end)
 
--- Nút Ẩn/Hiện Menu (Giữ chữ K HUB cố định)
+-- Nút Ẩn/Hiện Menu
 ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)

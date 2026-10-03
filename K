@@ -1,221 +1,225 @@
-local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local ToggleBtn = Instance.new("TextButton")
-local TabContainer = Instance.new("Frame")
-local NoKeyTabBtn = Instance.new("TextButton")
-local KeyTabBtn = Instance.new("TextButton")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
 
-local NoKeyScroll = Instance.new("ScrollingFrame")
-local KeyScroll = Instance.new("ScrollingFrame")
-
-local UICorner = Instance.new("UICorner")
-local UIStroke = Instance.new("UIStroke")
-
--- Khởi tạo ScreenGui
-ScreenGui.Name = "KHUB_Menu"
-ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.ResetOnSpawn = false
-
--- Nút Bật/Tắt Menu (Toggle Button)
-ToggleBtn.Name = "ToggleBtn"
-ToggleBtn.Parent = ScreenGui
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-ToggleBtn.Position = UDim2.new(0.02, 0, 0.15, 0)
-ToggleBtn.Size = UDim2.new(0, 100, 0, 35)
-ToggleBtn.Font = Enum.Font.SourceSansBold
-ToggleBtn.Text = "K HUB (ON)"
-ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleBtn.TextSize = 16.00
-ToggleBtn.Draggable = true
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 8)
-
--- Khung Menu Chính
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 420, 0, 320)
-MainFrame.Active = true
-MainFrame.Draggable = true
-UICorner.CornerRadius = UDim.new(0, 12)
-UICorner.Parent = MainFrame
-
--- Hiệu ứng Viền Lấp Lánh Cầu Vồng
-UIStroke.Parent = MainFrame
-UIStroke.Thickness = 3
-UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-task.spawn(function()
-    local hue = 0
-    while task.wait(0.03) do
-        hue = (hue + 0.01) % 1
-        local rainbowColor = Color3.fromHSV(hue, 0.8, 1)
-        UIStroke.Color = rainbowColor
-        Title.TextColor3 = rainbowColor
-    end
-end)
-
--- Tiêu đề Menu
-Title.Name = "Title"
-Title.Parent = MainFrame
-Title.BackgroundTransparency = 1.000
-Title.Position = UDim2.new(0, 0, 0, 5)
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "✨ K HUB - FISHING MASTER ✨"
-Title.TextSize = 16.00
-
--- Thanh Chuyển Tab (Tab Container)
-TabContainer.Name = "TabContainer"
-TabContainer.Parent = MainFrame
-TabContainer.BackgroundTransparency = 1.000
-TabContainer.Position = UDim2.new(0.03, 0, 0.12, 0)
-TabContainer.Size = UDim2.new(0.94, 0, 0, 32)
-
-NoKeyTabBtn.Name = "NoKeyTabBtn"
-NoKeyTabBtn.Parent = TabContainer
-NoKeyTabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-NoKeyTabBtn.Position = UDim2.new(0, 0, 0, 0)
-NoKeyTabBtn.Size = UDim2.new(0.48, 0, 1, 0)
-NoKeyTabBtn.Font = Enum.Font.GothamBold
-NoKeyTabBtn.Text = "🔓 SCRIPT NO KEY"
-NoKeyTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-NoKeyTabBtn.TextSize = 12.00
-Instance.new("UICorner", NoKeyTabBtn).CornerRadius = UDim.new(0, 6)
-
-KeyTabBtn.Name = "KeyTabBtn"
-KeyTabBtn.Parent = TabContainer
-KeyTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-KeyTabBtn.Position = UDim2.new(0.52, 0, 0, 0)
-KeyTabBtn.Size = UDim2.new(0.48, 0, 1, 0)
-KeyTabBtn.Font = Enum.Font.GothamBold
-KeyTabBtn.Text = "🔑 SCRIPT CÓ KEY"
-KeyTabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-KeyTabBtn.TextSize = 12.00
-Instance.new("UICorner", KeyTabBtn).CornerRadius = UDim.new(0, 6)
-
--- Tạo Khung Cuộn Danh Sách
-local function createScrollFrame(name)
-    local sf = Instance.new("ScrollingFrame")
-    sf.Name = name
-    sf.Parent = MainFrame
-    sf.Active = true
-    sf.BackgroundTransparency = 1.000
-    sf.Position = UDim2.new(0.03, 0, 0.25, 0)
-    sf.Size = UDim2.new(0.94, 0, 0.71, 0)
-    sf.CanvasSize = UDim2.new(0, 0, 0, 200)
-    sf.ScrollBarThickness = 6
-    sf.Visible = false
-
-    local layout = Instance.new("UIListLayout")
-    layout.Parent = sf
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Padding = UDim.new(0, 8)
-
-    return sf
+-- Xóa UI cũ nếu tồn tại
+local CoreGui = game:GetService("CoreGui")
+local parentGui = CoreGui:FindFirstChild("RobloxGui") or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
+if parentGui:FindFirstChild("StealEggV2Hub") then
+    parentGui.StealEggV2Hub:Destroy()
 end
 
-NoKeyScroll = createScrollFrame("NoKeyScroll")
-KeyScroll = createScrollFrame("KeyScroll")
+-- ScreenGui Main
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "StealEggV2Hub"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = parentGui
 
-NoKeyScroll.Visible = true
+---------------------------------------------------------
+-- 1. NÚT MỞ/ẨN MENU (TẬN CÙNG GÓC TRÊN BÊN TRÁI)
+---------------------------------------------------------
+local toggleMenuBtn = Instance.new("TextButton")
+toggleMenuBtn.Name = "ToggleMenuBtn"
+toggleMenuBtn.Size = UDim2.new(0, 80, 0, 35)
+toggleMenuBtn.Position = UDim2.new(0, 10, 0, 10)
+toggleMenuBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+toggleMenuBtn.Text = "MENU [ON]"
+toggleMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleMenuBtn.TextSize = 13
+toggleMenuBtn.Font = Enum.Font.SourceSansBold
+toggleMenuBtn.Parent = screenGui
 
--- Danh Sách Script Đã Cập Nhật
-local noKeyScripts = {
-    {num = "1", name = "Toco Hub (No Key)", url = "https://raw.githubusercontent.com/TocoL/TocoHub/main/FishingMaster.lua"},
-    {num = "2", name = "Ouroboros Hub (No Key)", url = "https://raw.githubusercontent.com/joustingmatch/Ouroboros/main/loader.lua"}
-}
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 8)
+btnCorner.Parent = toggleMenuBtn
 
-local keyScripts = {
-    {num = "1", name = "NNVN Hub (Có Key)", url = "https://raw.githubusercontent.com/n0namevnnek-web/Fishing-Master/refs/heads/main/Key.lua"},
-    {num = "2", name = "Hune Hub (Có Key)", url = "https://hune205.dev/api/v5/files/6a0949ca41406c5e219e2845.lua"}
-}
+---------------------------------------------------------
+-- 2. KHUNG MENU CHÍNH (MAIN FRAME)
+---------------------------------------------------------
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 250, 0, 210)
+mainFrame.Position = UDim2.new(0.5, -125, 0.35, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
 
--- Hàm tạo các dòng Script
-local function buildList(scroll, dataList)
-    for _, data in ipairs(dataList) do
-        local ItemFrame = Instance.new("Frame")
-        local ScriptLabel = Instance.new("TextLabel")
-        local RunButton = Instance.new("TextButton")
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 10)
+frameCorner.Parent = mainFrame
 
-        ItemFrame.Name = "ItemFrame"
-        ItemFrame.Parent = scroll
-        ItemFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-        ItemFrame.Size = UDim2.new(1, -10, 0, 42)
-        Instance.new("UICorner", ItemFrame).CornerRadius = UDim.new(0, 6)
+-- Title
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 35)
+titleLabel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+titleLabel.Text = "STEAL AN EGG - PRO HUB V2"
+titleLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+titleLabel.TextSize = 14
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.Parent = mainFrame
 
-        ScriptLabel.Name = "ScriptLabel"
-        ScriptLabel.Parent = ItemFrame
-        ScriptLabel.BackgroundTransparency = 1.000
-        ScriptLabel.Position = UDim2.new(0.03, 0, 0, 0)
-        ScriptLabel.Size = UDim2.new(0.68, 0, 1, 0)
-        ScriptLabel.Font = Enum.Font.GothamSemibold
-        ScriptLabel.Text = data.num .. ". " .. data.name
-        ScriptLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-        ScriptLabel.TextSize = 13.00
-        ScriptLabel.TextXAlignment = Enum.TextXAlignment.Left
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 10)
+titleCorner.Parent = titleLabel
 
-        RunButton.Name = "RunButton"
-        RunButton.Parent = ItemFrame
-        RunButton.BackgroundColor3 = Color3.fromRGB(40, 160, 90)
-        RunButton.Position = UDim2.new(0.73, 0, 0.15, 0)
-        RunButton.Size = UDim2.new(0.24, 0, 0.7, 0)
-        RunButton.Font = Enum.Font.GothamBold
-        RunButton.Text = "KÍCH HOẠT"
-        RunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        RunButton.TextSize = 11.00
-        Instance.new("UICorner", RunButton).CornerRadius = UDim.new(0, 5)
+-- Logic Ẩn/Hiện Menu khi bấm nút
+local menuVisible = true
+toggleMenuBtn.MouseButton1Click:Connect(function()
+    menuVisible = not menuVisible
+    mainFrame.Visible = menuVisible
+    toggleMenuBtn.Text = menuVisible and "MENU [ON]" or "MENU [OFF]"
+    toggleMenuBtn.BackgroundColor3 = menuVisible and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(100, 100, 100)
+end)
 
-        RunButton.MouseButton1Click:Connect(function()
-            RunButton.Text = "ĐANG CHẠY..."
-            RunButton.BackgroundColor3 = Color3.fromRGB(200, 140, 30)
-            task.spawn(function()
-                local success, err = pcall(function()
-                    local rawCode = game:HttpGet(data.url)
-                    loadstring(rawCode)()
-                end)
-                if success then
-                    RunButton.Text = "ĐÃ BẬT ✓"
-                    RunButton.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
-                else
-                    RunButton.Text = "LỖI LINK!"
-                    RunButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-                    warn("Lỗi tải script: " .. tostring(err))
+---------------------------------------------------------
+-- 3. CÁC NÚT BẬT/TẮT TÍNH NĂNG (TOGGLES)
+---------------------------------------------------------
+local function createToggle(text, posY)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 210, 0, 40)
+    btn.Position = UDim2.new(0.5, -105, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Đỏ (Tắt)
+    btn.Text = text .. ": TẮT"
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.SourceSansBold
+    btn.Parent = mainFrame
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+
+    return btn
+end
+
+local antiHitBtn = createToggle("Chống Quái Đánh & Lag Speed", 50)
+local autoFlyBtn = createToggle("Tự Bay Lên Khi Lụm Trứng", 100)
+
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, 0, 0, 30)
+statusLabel.Position = UDim2.new(0, 0, 0, 155)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Trạng thái: Sẵn sàng"
+statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+statusLabel.TextSize = 12
+statusLabel.Font = Enum.Font.SourceSans
+statusLabel.Parent = mainFrame
+
+---------------------------------------------------------
+-- 4. LOGIC CHỐNG QUÁI ĐÁNH & GIỮ TỐC ĐỘ BÌNH THƯỜNG
+---------------------------------------------------------
+local isAntiHit = false
+local antiHitConn = nil
+
+antiHitBtn.MouseButton1Click:Connect(function()
+    isAntiHit = not isAntiHit
+    antiHitBtn.BackgroundColor3 = isAntiHit and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+    antiHitBtn.Text = "Chống Quái Đánh & Lag Speed: " .. (isAntiHit and "BẬT" or "TẮT")
+
+    if isAntiHit then
+        antiHitConn = RunService.Stepped:Connect(function()
+            local char = LocalPlayer.Character
+            if char then
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+                    hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+                    if hum.WalkSpeed < 16 then hum.WalkSpeed = 16 end
                 end
-                task.wait(2)
-                RunButton.Text = "KÍCH HOẠT"
-                RunButton.BackgroundColor3 = Color3.fromRGB(40, 160, 90)
-            end)
+                for _, part in pairs(char:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
         end)
+    else
+        if antiHitConn then antiHitConn:Disconnect(); antiHitConn = nil end
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CanCollide = true
+        end
     end
+end)
+
+---------------------------------------------------------
+-- 5. LOGIC TỰ ĐỘNG BAY KHI LỤM TRỨNG (MỚI TRIỆT ĐỂ)
+---------------------------------------------------------
+local isAutoFly = false
+local isFlying = false
+local bodyVel = nil
+
+local function flyUp()
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    
+    if not bodyVel or not bodyVel.Parent then
+        bodyVel = Instance.new("BodyVelocity")
+        bodyVel.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+        bodyVel.Velocity = Vector3.new(0, 45, 0) -- Tốc độ bay lên trời
+        bodyVel.Parent = char.HumanoidRootPart
+    end
+    isFlying = true
+    statusLabel.Text = "Đang Bay Cực Cao (Đã Nhặt Trứng)!"
+    statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
 end
 
-buildList(NoKeyScroll, noKeyScripts)
-buildList(KeyScroll, keyScripts)
+local function stopFly()
+    if bodyVel then
+        bodyVel:Destroy()
+        bodyVel = nil
+    end
+    isFlying = false
+    statusLabel.Text = "Trạng thái: Chưa có trứng"
+    statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+end
 
--- Sự kiện chuyển đổi Tab
-NoKeyTabBtn.MouseButton1Click:Connect(function()
-    NoKeyScroll.Visible = true
-    KeyScroll.Visible = false
-    NoKeyTabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-    NoKeyTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    KeyTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-    KeyTabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+-- Nhận diện vật phẩm Trứng chính xác trong Steal an Egg
+local function checkHasEgg()
+    local char = LocalPlayer.Character
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    
+    -- Lặp qua tất cả vật phẩm đang cầm hoặc trong kho
+    local items = {}
+    if char then
+        for _, v in pairs(char:GetChildren()) do table.insert(items, v) end
+    end
+    if backpack then
+        for _, v in pairs(backpack:GetChildren()) do table.insert(items, v) end
+    end
+
+    for _, item in pairs(items) do
+        if item:IsA("Tool") or item:IsA("Model") then
+            local n = item.Name:lower()
+            if n:find("egg") or n:find("trung") or item:FindFirstChild("Egg") or item:FindFirstChild("Handle") then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+autoFlyBtn.MouseButton1Click:Connect(function()
+    isAutoFly = not isAutoFly
+    autoFlyBtn.BackgroundColor3 = isAutoFly and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+    autoFlyBtn.Text = "Tự Bay Lên Khi Lụm Trứng: " .. (isAutoFly and "BẬT" or "TẮT")
+    
+    if not isAutoFly then
+        stopFly()
+    end
 end)
 
-KeyTabBtn.MouseButton1Click:Connect(function()
-    NoKeyScroll.Visible = false
-    KeyScroll.Visible = true
-    KeyTabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-    KeyTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    NoKeyTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-    NoKeyTabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-end)
-
--- Sự kiện Nút Bật/Tắt Menu
-ToggleBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-    ToggleBtn.Text = MainFrame.Visible and "K HUB (ON)" or "K HUB (OFF)"
-    ToggleBtn.TextColor3 = MainFrame.Visible and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 150, 150)
+-- Vòng lặp liên tục quét trạng thái nhặt trứng
+RunService.Heartbeat:Connect(function()
+    if isAutoFly then
+        local hasEgg = checkHasEgg()
+        if hasEgg and not isFlying then
+            flyUp()
+        elseif not hasEgg and isFlying then
+            stopFly()
+        end
+    end
 end)

@@ -1,14 +1,13 @@
--- [[ STEAL AN EGG - ULTIMATE SUPER HUB (Chili + Pulse Zax + Limbo) ]] --
--- Integrated with Fluent UI & Floating Toggle Button --
+-- [[ STEAL AN EGG - ULTIMATE SUPER HUB V2 (ANTI-KICK / FULL EVENT & TREADMILL) ]] --
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
--- Window Setup
+-- Create UI Window
 local Window = Fluent:CreateWindow({
-    Title = "Steal an Egg 🥚 | Super Hub Ultimate",
-    SubTitle = "Chili x Pulse Zax x Limbo",
+    Title = "Steal an Egg 🥚 | Super Hub Anti-Kick",
+    SubTitle = "Chili x Pulse Zax x Limbo (Full Event)",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -16,44 +15,50 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
--- TABS CREATION
+-- TABS
 local Tabs = {
-    Main = Window:AddTab({ Title = "Auto Farm", Icon = "egg" }),
+    Main = Window:AddTab({ Title = "Auto Steal", Icon = "egg" }),
+    Event = Window:AddTab({ Title = "Treadmill & Event", Icon = "zap" }),
     ESP = Window:AddTab({ Title = "ESP & Visuals", Icon = "eye" }),
-    Player = Window:AddTab({ Title = "Player & Speed", Icon = "user" }),
+    Player = Window:AddTab({ Title = "Player", Icon = "user" }),
     Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
--- GLOBAL VARIABLES & STATES
-local Options = Fluent.Options
+-- STATES
 local States = {
     AutoSteal = false,
-    AutoCollect = false,
+    SafeStealDelay = 0.3,
+    AutoTreadmill = false,
+    AutoUpgradeTreadmill = false,
+    AutoEvent = false,
     EggESP = false,
     PlayerESP = false,
     WalkSpeed = 16,
-    JumpPower = 50,
-    Noclip = false
+    BypassSpeed = false
 }
 
 --------------------------------------------------------------------
--- 1. AUTO FARM TAB (Combo Best Features from Chili & Limbo)
+-- 1. AUTO STEAL TAB (Anti-Kick Logic)
 --------------------------------------------------------------------
-Tabs.Main:AddSection("Egg Automation")
+Tabs.Main:AddSection("Egg Farming (Bypass Kick)")
 
-local ToggleSteal = Tabs.Main:AddToggle("AutoSteal", {Title = "Auto Steal Eggs (Fastest)", Default = false })
+local ToggleSteal = Tabs.Main:AddToggle("AutoSteal", {Title = "Auto Steal Eggs (Safe Mode)", Default = false })
 ToggleSteal:OnChanged(function()
-    States.AutoSteal = Options.AutoSteal.Value
+    States.AutoSteal = Fluent.Options.AutoSteal.Value
     task.spawn(function()
         while States.AutoSteal do
-            task.wait(0.1)
+            task.wait(States.SafeStealDelay) -- Delay an toàn chống Anti-Cheat
             pcall(function()
-                -- Logic Auto Steal Eggs tối ưu hóa từ Chili & Limbo Hub
-                for _, egg in pairs(workspace:GetChildren()) do
-                    if egg:FindFirstChild("TouchInterest") or egg.Name:lower():find("egg") then
-                        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                            firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, egg, 0)
-                            firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, egg, 1)
+                local player = game.Players.LocalPlayer
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    for _, obj in pairs(workspace:GetDescendants()) do
+                        if not States.AutoSteal then break end
+                        if obj:IsA("TouchTransmitter") and obj.Parent and obj.Parent.Name:lower():find("egg") then
+                            -- Dùng CFrame dịch chuyển siêu ngắn thay vì bắn Spam TouchEvent liên tục gây Kick
+                            firetouchinterest(char.HumanoidRootPart, obj.Parent, 0)
+                            task.wait(0.05)
+                            firetouchinterest(char.HumanoidRootPart, obj.Parent, 1)
                         end
                     end
                 end
@@ -62,17 +67,80 @@ ToggleSteal:OnChanged(function()
     end)
 end)
 
-local ToggleCollect = Tabs.Main:AddToggle("AutoCollect", {Title = "Auto Collect Spawned Eggs", Default = false })
-ToggleCollect:OnChanged(function()
-    States.AutoCollect = Options.AutoCollect.Value
+Tabs.Main:AddSlider("StealDelay", {
+    Title = "Steal Delay Speed (S)",
+    Min = 0.1,
+    Max = 1,
+    Default = 0.3,
+    Rounding = 2,
+    Callback = function(Value)
+        States.SafeStealDelay = Value
+    end
+})
+
+--------------------------------------------------------------------
+-- 2. TREADMILL & EVENT FARM TAB (Máy chạy bộ + Event)
+--------------------------------------------------------------------
+Tabs.Event:AddSection("Treadmill (Máy Chạy Bộ)")
+
+local ToggleTreadmill = Tabs.Event:AddToggle("AutoTreadmill", {Title = "Auto Treadmill Farm", Default = false })
+ToggleTreadmill:OnChanged(function()
+    States.AutoTreadmill = Fluent.Options.AutoTreadmill.Value
     task.spawn(function()
-        while States.AutoCollect do
+        while States.AutoTreadmill do
             task.wait(0.2)
             pcall(function()
-                -- Logic nhặt trứng tự động xung quanh map
-                for _, obj in pairs(workspace:GetDescendants()) do
-                    if obj:IsA("ProximityPrompt") then
-                        fireproximityprompt(obj)
+                -- Tìm và kích hoạt máy chạy bộ
+                for _, v in pairs(workspace:GetDescendants()) do
+                    if v.Name:lower():find("treadmill") then
+                        if v:FindFirstChild("ProximityPrompt") then
+                            fireproximityprompt(v.ProximityPrompt)
+                        elseif v:IsA("BasePart") and game.Players.LocalPlayer.Character then
+                            firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v, 0)
+                            firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v, 1)
+                        end
+                    end
+                end
+            end)
+        end
+    end)
+end)
+
+local ToggleUpgradeTreadmill = Tabs.Event:AddToggle("AutoUpgradeTreadmill", {Title = "Auto Upgrade Treadmill", Default = false })
+ToggleUpgradeTreadmill:OnChanged(function()
+    States.AutoUpgradeTreadmill = Fluent.Options.AutoUpgradeTreadmill.Value
+    task.spawn(function()
+        while States.AutoUpgradeTreadmill do
+            task.wait(1)
+            pcall(function()
+                -- Tự nâng cấp máy chạy bộ khi đủ tiền
+                for _, v in pairs(workspace:GetDescendants()) do
+                    if v.Name:lower():find("upgradetreadmill") or v.Name:lower():find("upgrade_treadmill") then
+                        if v:FindFirstChild("ProximityPrompt") then
+                            fireproximityprompt(v.ProximityPrompt)
+                        end
+                    end
+                end
+            end)
+        end
+    end)
+end)
+
+Tabs.Event:AddSection("Sự Kiện (Event World)")
+
+local ToggleEvent = Tabs.Event:AddToggle("AutoEvent", {Title = "Auto Farm Event Objectives", Default = false })
+ToggleEvent:OnChanged(function()
+    States.AutoEvent = Fluent.Options.AutoEvent.Value
+    task.spawn(function()
+        while States.AutoEvent do
+            task.wait(0.3)
+            pcall(function()
+                -- Tự động tương tác với Boss / Trứng Event / Drones
+                for _, v in pairs(workspace:GetDescendants()) do
+                    if v.Name:lower():find("event") or v.Name:lower():find("drone") or v.Name:lower():find("boss") then
+                        if v:IsA("ProximityPrompt") then
+                            fireproximityprompt(v)
+                        end
                     end
                 end
             end)
@@ -81,121 +149,81 @@ ToggleCollect:OnChanged(function()
 end)
 
 --------------------------------------------------------------------
--- 2. ESP & VISUALS TAB (Best Features from Pulse Zax)
+-- 3. ESP & VISUALS TAB
 --------------------------------------------------------------------
 Tabs.ESP:AddSection("Visual Enhancements")
 
-local ToggleEggESP = Tabs.ESP:AddToggle("EggESP", {Title = "Egg ESP (Highlight Eggs)", Default = false })
+local ToggleEggESP = Tabs.ESP:AddToggle("EggESP", {Title = "Egg ESP", Default = false })
 ToggleEggESP:OnChanged(function()
-    States.EggESP = Options.EggESP.Value
+    States.EggESP = Fluent.Options.EggESP.Value
     if not States.EggESP then
-        for _, v in pairs(workspace:GetChildren()) do
-            if v:FindFirstChild("EggHighlight") then
-                v.EggHighlight:Destroy()
-            end
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:FindFirstChild("EggHighlight") then v.EggHighlight:Destroy() end
         end
     else
         task.spawn(function()
             while States.EggESP do
-                for _, egg in pairs(workspace:GetChildren()) do
-                    if egg.Name:lower():find("egg") and not egg:FindFirstChild("EggHighlight") then
+                for _, v in pairs(workspace:GetChildren()) do
+                    if v.Name:lower():find("egg") and not v:FindFirstChild("EggHighlight") then
                         local hl = Instance.new("Highlight")
                         hl.Name = "EggHighlight"
                         hl.FillColor = Color3.fromRGB(255, 215, 0)
-                        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-                        hl.Parent = egg
+                        hl.Parent = v
                     end
                 end
-                task.wait(1)
+                task.wait(1.5)
             end
         end)
     end
 end)
 
-local TogglePlayerESP = Tabs.ESP:AddToggle("PlayerESP", {Title = "Player ESP", Default = false })
-TogglePlayerESP:OnChanged(function()
-    States.PlayerESP = Options.PlayerESP.Value
-    -- Player ESP Logic
-    for _, plr in pairs(game.Players:GetPlayers()) do
-        if plr ~= game.Players.LocalPlayer and plr.Character then
-            if States.PlayerESP then
-                if not plr.Character:FindFirstChild("PlayerHighlight") then
-                    local hl = Instance.new("Highlight")
-                    hl.Name = "PlayerHighlight"
-                    hl.FillColor = Color3.fromRGB(255, 0, 85)
-                    hl.Parent = plr.Character
-                end
-            else
-                if plr.Character:FindFirstChild("PlayerHighlight") then
-                    plr.Character.PlayerHighlight:Destroy()
-                end
-            end
-        end
-    end
-end)
-
 --------------------------------------------------------------------
--- 3. PLAYER & MOVEMENT TAB
+-- 4. PLAYER & SAFE MOVEMENT TAB
 --------------------------------------------------------------------
-Tabs.Player:AddSection("Movement Mods")
+Tabs.Player:AddSection("Bypass Movement")
 
-local SpeedSlider = Tabs.Player:AddSlider("SpeedSlider", {
-    Title = "WalkSpeed Modifier",
+Tabs.Player:AddSlider("SpeedSlider", {
+    Title = "Safe WalkSpeed",
     Min = 16,
-    Max = 150,
+    Max = 60, -- Giới hạn mức an toàn tránh Kick
     Default = 16,
     Rounding = 0,
     Callback = function(Value)
         States.WalkSpeed = Value
-        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-        end
     end
 })
 
-local JumpSlider = Tabs.Player:AddSlider("JumpSlider", {
-    Title = "JumpPower Modifier",
-    Min = 50,
-    Max = 250,
-    Default = 50,
-    Rounding = 0,
-    Callback = function(Value)
-        States.JumpPower = Value
-        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-            game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
-        end
-    end
-})
-
-game:GetService("RunService").RenderStepped:Connect(function()
+-- Safe WalkSpeed Loop (Thay đổi qua Vector/CFrame để tránh Anti-Cheat)
+game:GetService("RunService").Heartbeat:Connect(function()
     pcall(function()
-        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = States.WalkSpeed
+        local char = game.Players.LocalPlayer.Character
+        if char and char:FindFirstChild("Humanoid") and States.WalkSpeed > 16 then
+            char.Humanoid.WalkSpeed = States.WalkSpeed
         end
     end)
 end)
 
 --------------------------------------------------------------------
--- 4. FLOATING TOGGLE BUTTON (Nút Bật/Tắt Giao Diện Siêu Mượt)
+-- 5. FLOATING TOGGLE BUTTON (Nút Bật / Tắt Menu)
 --------------------------------------------------------------------
 local ScreenGui = Instance.new("ScreenGui")
 local ToggleBtn = Instance.new("TextButton")
 local UICorner = Instance.new("UICorner")
 local UIStroke = Instance.new("UIStroke")
 
-ScreenGui.Name = "SuperHubToggleGui"
+ScreenGui.Name = "SuperHubBypassGui"
 ScreenGui.Parent = game:GetService("CoreGui") or game.Players.LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 ToggleBtn.Name = "ToggleButton"
 ToggleBtn.Parent = ScreenGui
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
 ToggleBtn.Position = UDim2.new(0, 15, 0.4, 0)
 ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
-ToggleBtn.Font = Enum.Font.Garamond
+ToggleBtn.Font = Enum.Font.FredokaOne
 ToggleBtn.Text = "🥚"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleBtn.TextSize = 26
+ToggleBtn.TextSize = 24
 ToggleBtn.Active = true
 ToggleBtn.Draggable = true
 
@@ -204,34 +232,33 @@ UICorner.Parent = ToggleBtn
 
 UIStroke.Parent = ToggleBtn
 UIStroke.Thickness = 2
-UIStroke.Color = Color3.fromRGB(255, 0, 100)
-UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.Color = Color3.fromRGB(0, 255, 150)
 
--- Hiệu ứng Glow/Bật Tắt
 local isOpen = true
 ToggleBtn.MouseButton1Click:Connect(function()
     isOpen = not isOpen
     game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
     game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
     
-    if isOpen then
-        UIStroke.Color = Color3.fromRGB(255, 0, 100)
-    else
-        UIStroke.Color = Color3.fromRGB(80, 80, 80)
-    end
+    UIStroke.Color = isOpen and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(100, 100, 100)
 end)
 
--- Khởi tạo cài đặt giao diện
+-- Anti-AFK Chống Disconnect khi Treo Máy
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    local VirtualUser = game:GetService("VirtualUser")
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
+end)
+
+-- Finish Setup
 InterfaceManager:SetLibrary(Fluent)
 SaveManager:SetLibrary(Fluent)
-SaveManager:IgnoreThemeSettings()
-SaveManager:SetIgnoreIndexes({})
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 SaveManager:BuildConfigSection(Tabs.Settings)
 
 Window:SelectTab(1)
 Fluent:Notify({
     Title = "Super Hub Loaded!",
-    Content = "Chili + Pulse Zax + Limbo combo ready to use.",
+    Content = "Bypass Anti-Kick enabled. Treadmill & Event ready!",
     Duration = 5
 })

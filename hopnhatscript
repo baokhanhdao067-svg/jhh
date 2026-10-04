@@ -1,267 +1,237 @@
--- =========================================================
--- STEAL AN EGG - ULTIMATE COMBINED HUB (CHILLI + LIMBO + PULSE ZAX)
--- Status: Bypass All Updates | Anti-Lag | Instant Steal
--- =========================================================
+-- [[ STEAL AN EGG - ULTIMATE SUPER HUB (Chili + Pulse Zax + Limbo) ]] --
+-- Integrated with Fluent UI & Floating Toggle Button --
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LocalPlayer = Players.LocalPlayer
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
--- CLEANUP OLD GUI
-local CoreGui = game:GetService("CoreGui")
-local parentGui = CoreGui:FindFirstChild("RobloxGui") or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
-if parentGui:FindFirstChild("SUPER_STEAL_HUB") then
-    parentGui.SUPER_STEAL_HUB:Destroy()
-end
+-- Window Setup
+local Window = Fluent:CreateWindow({
+    Title = "Steal an Egg 🥚 | Super Hub Ultimate",
+    SubTitle = "Chili x Pulse Zax x Limbo",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Darker",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
 
----------------------------------------------------------
--- CONFIG & STATE
----------------------------------------------------------
-local Config = {
-    AutoSteal = false,
-    AutoReturn = false,
-    AutoPickDrop = false,
-    BatAura = false,
-    AutoHatch = false,
-    AutoSell = false,
-    GodMode = false,
-    Speed = 250
+-- TABS CREATION
+local Tabs = {
+    Main = Window:AddTab({ Title = "Auto Farm", Icon = "egg" }),
+    ESP = Window:AddTab({ Title = "ESP & Visuals", Icon = "eye" }),
+    Player = Window:AddTab({ Title = "Player & Speed", Icon = "user" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
-local SAFE_BASE_POS = Vector3.new(465.18, 67.08, -364.07)
+-- GLOBAL VARIABLES & STATES
+local Options = Fluent.Options
+local States = {
+    AutoSteal = false,
+    AutoCollect = false,
+    EggESP = false,
+    PlayerESP = false,
+    WalkSpeed = 16,
+    JumpPower = 50,
+    Noclip = false
+}
 
----------------------------------------------------------
--- 1. CHILLI HUB ENGINE: NETWORK & SIMULATION BYPASS
----------------------------------------------------------
-pcall(function()
-    sethiddenproperty(LocalPlayer, "SimulationRadius", 10000)
-    sethiddenproperty(LocalPlayer, "MaxSimulationRadius", 10000)
-end)
+--------------------------------------------------------------------
+-- 1. AUTO FARM TAB (Combo Best Features from Chili & Limbo)
+--------------------------------------------------------------------
+Tabs.Main:AddSection("Egg Automation")
 
----------------------------------------------------------
--- 2. PULSE ZAX ENGINE: FORCE PICKUP & PROXIMITY BYPASS
----------------------------------------------------------
-local function forceCollectEgg(eggObject)
-    if not eggObject then return end
-
-    -- Kích hoạt ProximityPrompt
-    for _, prompt in pairs(eggObject:GetDescendants()) do
-        if prompt:IsA("ProximityPrompt") then
-            prompt.HoldDuration = 0
-            if fireproximityprompt then
-                fireproximityprompt(prompt)
-            else
-                prompt:InputHoldBegin()
-                task.wait(0.01)
-                prompt:InputHoldEnd()
-            end
-        end
-    end
-
-    -- Kích hoạt ClickDetector
-    for _, clicker in pairs(eggObject:GetDescendants()) do
-        if clicker:IsA("ClickDetector") and fireclickdetector then
-            fireclickdetector(clicker)
-        end
-    end
-
-    -- Quét & Trigger RemoteEvent (Mới Update)
-    for _, obj in pairs(ReplicatedStorage:GetDescendants()) do
-        if obj:IsA("RemoteEvent") or obj:IsA("UnreliableRemoteEvent") then
-            local rName = obj.Name:lower()
-            if rName:find("steal") or rName:find("egg") or rName:find("pick") or rName:find("grab") or rName:find("collect") or rName:find("claim") then
-                pcall(function()
-                    obj:FireServer(eggObject)
-                end)
-            end
-        end
-    end
-end
-
----------------------------------------------------------
--- HELPER FUNCTIONS
----------------------------------------------------------
-local function isCarryingEgg()
-    local char = LocalPlayer.Character
-    if not char then return false end
-
-    for _, obj in pairs(char:GetDescendants()) do
-        local n = obj.Name:lower()
-        if n:find("egg") or n:find("trung") then return true end
-    end
-
-    local backpack = LocalPlayer:FindFirstChild("Backpack")
-    if backpack and #backpack:GetChildren() > 0 then return true end
-
-    return false
-end
-
-local function getClosestEgg()
-    local char = LocalPlayer.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
-    local hrp = char.HumanoidRootPart
-
-    local closestEgg = nil
-    local shortestDist = 5000
-
-    for _, v in pairs(Workspace:GetDescendants()) do
-        if v:IsA("BasePart") or v:IsA("Model") then
-            local name = v.Name:lower()
-            if (name:find("egg") or name:find("trung")) and not v:IsDescendantOf(char) then
-                local pos = v:IsA("Model") and (v.PrimaryPart and v.PrimaryPart.Position or v:GetAttribute("Position")) or v.Position
-                if pos then
-                    local dist = (pos - hrp.Position).Magnitude
-                    if dist < shortestDist then
-                        shortestDist = dist
-                        closestEgg = {Object = v, Position = pos}
-                    end
-                end
-            end
-        end
-    end
-    return closestEgg
-end
-
----------------------------------------------------------
--- 3. LIMBO HUB ENGINE: BAT AURA & KNOCKBACK
----------------------------------------------------------
-task.spawn(function()
-    while task.wait(0.1) do
-        if Config.BatAura then
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                local tool = char:FindFirstChildOfClass("Tool")
-                if tool and (tool.Name:lower():find("bat") or tool.Name:lower():find("weapon") or tool.Name:lower():find("stick")) then
-                    tool:Activate()
-                end
-
-                -- Hit target nearby
-                for _, otherPlayer in pairs(Players:GetPlayers()) do
-                    if otherPlayer ~= LocalPlayer and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        local targetHRP = otherPlayer.Character.HumanoidRootPart
-                        local dist = (targetHRP.Position - char.HumanoidRootPart.Position).Magnitude
-                        if dist < 15 then
-                            if tool then tool:Activate() end
+local ToggleSteal = Tabs.Main:AddToggle("AutoSteal", {Title = "Auto Steal Eggs (Fastest)", Default = false })
+ToggleSteal:OnChanged(function()
+    States.AutoSteal = Options.AutoSteal.Value
+    task.spawn(function()
+        while States.AutoSteal do
+            task.wait(0.1)
+            pcall(function()
+                -- Logic Auto Steal Eggs tối ưu hóa từ Chili & Limbo Hub
+                for _, egg in pairs(workspace:GetChildren()) do
+                    if egg:FindFirstChild("TouchInterest") or egg.Name:lower():find("egg") then
+                        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, egg, 0)
+                            firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, egg, 1)
                         end
                     end
                 end
-            end
+            end)
         end
-    end
-end)
-
----------------------------------------------------------
--- 4. MAIN LOOP ENGINE (COMBINED LOGIC)
----------------------------------------------------------
-task.spawn(function()
-    while task.wait(0.02) do
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            local hrp = char.HumanoidRootPart
-
-            -- Logic 1: Auto Steal / Pick Egg
-            if (Config.AutoSteal or Config.AutoPickDrop) and not isCarryingEgg() then
-                local egg = getClosestEgg()
-                if egg then
-                    hrp.CFrame = CFrame.new(egg.Position + Vector3.new(0, 1.5, 0))
-                    forceCollectEgg(egg.Object)
-                    task.wait(0.05)
-                end
-            -- Logic 2: Auto Return Base
-            elseif Config.AutoReturn and isCarryingEgg() then
-                hrp.CFrame = CFrame.new(SAFE_BASE_POS)
-            end
-
-            -- Logic 3: Chilli Auto Hatch & Sell
-            if Config.AutoHatch or Config.AutoSell then
-                for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
-                    if remote:IsA("RemoteEvent") then
-                        local rName = remote.Name:lower()
-                        if Config.AutoHatch and (rName:find("hatch") or rName:find("open")) then
-                            pcall(function() remote:FireServer() end)
-                        end
-                        if Config.AutoSell and (rName:find("sell") or rName:find("delete")) then
-                            pcall(function() remote:FireServer() end)
-                        end
-                    end
-                end
-            end
-        end
-    end
-end)
-
----------------------------------------------------------
--- 5. GODMODE & NOCLIP BYPASS
----------------------------------------------------------
-RunService.Stepped:Connect(function()
-    local char = LocalPlayer.Character
-    if char and Config.GodMode then
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if hum then
-            hum.Health = hum.MaxHealth
-            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-            hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-        end
-        for _, part in pairs(char:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-    end
-end)
-
----------------------------------------------------------
--- 6. ADVANCED GUI INTERFACE
----------------------------------------------------------
-local sg = Instance.new("ScreenGui", parentGui)
-sg.Name = "SUPER_STEAL_HUB"
-
-local frame = Instance.new("Frame", sg)
-frame.Size = UDim2.new(0, 290, 0, 360)
-frame.Position = UDim2.new(0.5, -145, 0.15, 0)
-frame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-frame.Active = true
-frame.Draggable = true
-
-local frameCorner = Instance.new("UICorner", frame)
-frameCorner.CornerRadius = UDim.new(0, 8)
-
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 40)
-title.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
-title.Text = "👑 STEAL AN EGG - COMBINED HUB 👑"
-title.TextColor3 = Color3.fromRGB(255, 215, 0)
-title.Font = Enum.Font.SourceSansBold
-title.TextSize = 13
-
-local titleCorner = Instance.new("UICorner", title)
-titleCorner.CornerRadius = UDim.new(0, 8)
-
-local function makeToggle(name, yPos, cfgKey)
-    local btn = Instance.new("TextButton", frame)
-    btn.Size = UDim2.new(0, 260, 0, 34)
-    btn.Position = UDim2.new(0.5, -130, 0, yPos)
-    btn.BackgroundColor3 = Color3.fromRGB(170, 35, 35)
-    btn.Text = name .. ": OFF"
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.SourceSansBold
-    btn.TextSize = 12
-
-    local corner = Instance.new("UICorner", btn)
-    corner.CornerRadius = UDim.new(0, 6)
-
-    btn.MouseButton1Click:Connect(function()
-        Config[cfgKey] = not Config[cfgKey]
-        btn.BackgroundColor3 = Config[cfgKey] and Color3.fromRGB(35, 170, 65) or Color3.fromRGB(170, 35, 35)
-        btn.Text = name .. ": " .. (Config[cfgKey] and "ON" or "OFF")
     end)
-end
+end)
 
-makeToggle("1. Auto Steal (Pulse Zax Fix)", 50, "AutoSteal")
-makeToggle("2. Auto Return Safe Base", 90, "AutoReturn")
-makeToggle("3. Auto Pick Dropped Eggs", 130, "AutoPickDrop")
-makeToggle("4. Bat Aura / Auto Hit (Limbo Hub)", 170, "BatAura")
-makeToggle("5. Auto Hatch & Sell (Chilli Hub)", 210, "AutoHatch")
-makeToggle("6. GodMode & Noclip (Bypass All)", 250, "GodMode")
+local ToggleCollect = Tabs.Main:AddToggle("AutoCollect", {Title = "Auto Collect Spawned Eggs", Default = false })
+ToggleCollect:OnChanged(function()
+    States.AutoCollect = Options.AutoCollect.Value
+    task.spawn(function()
+        while States.AutoCollect do
+            task.wait(0.2)
+            pcall(function()
+                -- Logic nhặt trứng tự động xung quanh map
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("ProximityPrompt") then
+                        fireproximityprompt(obj)
+                    end
+                end
+            end)
+        end
+    end)
+end)
+
+--------------------------------------------------------------------
+-- 2. ESP & VISUALS TAB (Best Features from Pulse Zax)
+--------------------------------------------------------------------
+Tabs.ESP:AddSection("Visual Enhancements")
+
+local ToggleEggESP = Tabs.ESP:AddToggle("EggESP", {Title = "Egg ESP (Highlight Eggs)", Default = false })
+ToggleEggESP:OnChanged(function()
+    States.EggESP = Options.EggESP.Value
+    if not States.EggESP then
+        for _, v in pairs(workspace:GetChildren()) do
+            if v:FindFirstChild("EggHighlight") then
+                v.EggHighlight:Destroy()
+            end
+        end
+    else
+        task.spawn(function()
+            while States.EggESP do
+                for _, egg in pairs(workspace:GetChildren()) do
+                    if egg.Name:lower():find("egg") and not egg:FindFirstChild("EggHighlight") then
+                        local hl = Instance.new("Highlight")
+                        hl.Name = "EggHighlight"
+                        hl.FillColor = Color3.fromRGB(255, 215, 0)
+                        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        hl.Parent = egg
+                    end
+                end
+                task.wait(1)
+            end
+        end)
+    end
+end)
+
+local TogglePlayerESP = Tabs.ESP:AddToggle("PlayerESP", {Title = "Player ESP", Default = false })
+TogglePlayerESP:OnChanged(function()
+    States.PlayerESP = Options.PlayerESP.Value
+    -- Player ESP Logic
+    for _, plr in pairs(game.Players:GetPlayers()) do
+        if plr ~= game.Players.LocalPlayer and plr.Character then
+            if States.PlayerESP then
+                if not plr.Character:FindFirstChild("PlayerHighlight") then
+                    local hl = Instance.new("Highlight")
+                    hl.Name = "PlayerHighlight"
+                    hl.FillColor = Color3.fromRGB(255, 0, 85)
+                    hl.Parent = plr.Character
+                end
+            else
+                if plr.Character:FindFirstChild("PlayerHighlight") then
+                    plr.Character.PlayerHighlight:Destroy()
+                end
+            end
+        end
+    end
+end)
+
+--------------------------------------------------------------------
+-- 3. PLAYER & MOVEMENT TAB
+--------------------------------------------------------------------
+Tabs.Player:AddSection("Movement Mods")
+
+local SpeedSlider = Tabs.Player:AddSlider("SpeedSlider", {
+    Title = "WalkSpeed Modifier",
+    Min = 16,
+    Max = 150,
+    Default = 16,
+    Rounding = 0,
+    Callback = function(Value)
+        States.WalkSpeed = Value
+        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+        end
+    end
+})
+
+local JumpSlider = Tabs.Player:AddSlider("JumpSlider", {
+    Title = "JumpPower Modifier",
+    Min = 50,
+    Max = 250,
+    Default = 50,
+    Rounding = 0,
+    Callback = function(Value)
+        States.JumpPower = Value
+        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+            game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+        end
+    end
+})
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    pcall(function()
+        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = States.WalkSpeed
+        end
+    end)
+end)
+
+--------------------------------------------------------------------
+-- 4. FLOATING TOGGLE BUTTON (Nút Bật/Tắt Giao Diện Siêu Mượt)
+--------------------------------------------------------------------
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleBtn = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
+local UIStroke = Instance.new("UIStroke")
+
+ScreenGui.Name = "SuperHubToggleGui"
+ScreenGui.Parent = game:GetService("CoreGui") or game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+ToggleBtn.Name = "ToggleButton"
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+ToggleBtn.Position = UDim2.new(0, 15, 0.4, 0)
+ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
+ToggleBtn.Font = Enum.Font.Garamond
+ToggleBtn.Text = "🥚"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.TextSize = 26
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true
+
+UICorner.CornerRadius = UDim.new(1, 0)
+UICorner.Parent = ToggleBtn
+
+UIStroke.Parent = ToggleBtn
+UIStroke.Thickness = 2
+UIStroke.Color = Color3.fromRGB(255, 0, 100)
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+-- Hiệu ứng Glow/Bật Tắt
+local isOpen = true
+ToggleBtn.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
+    game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
+    
+    if isOpen then
+        UIStroke.Color = Color3.fromRGB(255, 0, 100)
+    else
+        UIStroke.Color = Color3.fromRGB(80, 80, 80)
+    end
+end)
+
+-- Khởi tạo cài đặt giao diện
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+Fluent:Notify({
+    Title = "Super Hub Loaded!",
+    Content = "Chili + Pulse Zax + Limbo combo ready to use.",
+    Duration = 5
+})

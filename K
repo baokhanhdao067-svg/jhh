@@ -2,25 +2,25 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- Xóa UI cũ nếu có
+-- Xóa UI cũ nếu đã tồn tại
 local CoreGui = game:GetService("CoreGui")
 local parentGui = CoreGui:FindFirstChild("RobloxGui") or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
-if parentGui:FindFirstChild("StealEggMasterHub") then
-    parentGui.StealEggMasterHub:Destroy()
+if parentGui:FindFirstChild("StealEggProHub") then
+    parentGui.StealEggProHub:Destroy()
 end
 
--- GUI chính
+-- Tạo UI
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "StealEggMasterHub"
+screenGui.Name = "StealEggProHub"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = parentGui
 
 ---------------------------------------------------------
--- 1. NÚT NỔI BẬT/TẮT ẨN HIỆN MENU
+-- 1. NÚT MỞ / TẮT MENU
 ---------------------------------------------------------
 local toggleMenuBtn = Instance.new("TextButton")
 toggleMenuBtn.Name = "ToggleMenuBtn"
-toggleMenuBtn.Size = UDim2.new(0, 80, 0, 35)
+toggleMenuBtn.Size = UDim2.new(0, 90, 0, 35)
 toggleMenuBtn.Position = UDim2.new(0, 15, 0, 15)
 toggleMenuBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 toggleMenuBtn.Text = "MENU [ON]"
@@ -38,8 +38,8 @@ btnCorner.Parent = toggleMenuBtn
 ---------------------------------------------------------
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 260, 0, 260)
-mainFrame.Position = UDim2.new(0.5, -130, 0.3, 0)
+mainFrame.Size = UDim2.new(0, 270, 0, 260)
+mainFrame.Position = UDim2.new(0.5, -135, 0.3, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
@@ -50,13 +50,12 @@ local frameCorner = Instance.new("UICorner")
 frameCorner.CornerRadius = UDim.new(0, 10)
 frameCorner.Parent = mainFrame
 
--- Tiêu đề
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, 0, 0, 38)
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
 titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-titleLabel.Text = "👑 STEAL AN EGG - GOD HUB 👑"
+titleLabel.Text = "🥚 STEAL AN EGG - AIRWALK HUB 🥚"
 titleLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
-titleLabel.TextSize = 14
+titleLabel.TextSize = 13
 titleLabel.Font = Enum.Font.SourceSansBold
 titleLabel.Parent = mainFrame
 
@@ -64,7 +63,6 @@ local titleCorner = Instance.new("UICorner")
 titleCorner.CornerRadius = UDim.new(0, 10)
 titleCorner.Parent = titleLabel
 
--- Logic Ẩn / Hiện Menu
 local menuVisible = true
 toggleMenuBtn.MouseButton1Click:Connect(function()
     menuVisible = not menuVisible
@@ -74,13 +72,13 @@ toggleMenuBtn.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------
--- 3. HÀM TẠO NÚT BẬT/TẮT (TOGGLE BUTTON)
+-- 3. HÀM TẠO TOGGLE BUTTON
 ---------------------------------------------------------
 local function createToggle(text, posY)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 230, 0, 40)
-    btn.Position = UDim2.new(0.5, -115, 0, posY)
-    btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40) -- Đỏ (TẮT)
+    btn.Size = UDim2.new(0, 240, 0, 40)
+    btn.Position = UDim2.new(0.5, -120, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40) -- Mặc định TẮT
     btn.Text = text .. ": TẮT"
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.TextSize = 13
@@ -94,97 +92,27 @@ local function createToggle(text, posY)
     return btn
 end
 
-local antiHitBtn = createToggle("Chống Quái Đánh (Anti-Hit)", 50)
-local autoFlyBtn = createToggle("Lụm Trứng Tự Bay Lên", 100)
-local speedBoostBtn = createToggle("Tăng Tốc Chạy Bá Đạo", 150)
+local autoFlyBtn = createToggle("Trứng -> Bay & Đi Trên Không", 50)
+local speedBoostBtn = createToggle("Siêu Tốc Độ (Không Lag Slow)", 105)
+local antiHitBtn = createToggle("Chống Quái Đánh / Bất Tử", 160)
 
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, 0, 0, 30)
-statusLabel.Position = UDim2.new(0, 0, 0, 210)
+statusLabel.Position = UDim2.new(0, 0, 0, 215)
 statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "Trạng thái: Sẵn sàng cướp trứng!"
+statusLabel.Text = "Trạng thái: Sẵn sàng cướp trứng"
 statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 statusLabel.TextSize = 12
 statusLabel.Font = Enum.Font.SourceSans
 statusLabel.Parent = mainFrame
 
 ---------------------------------------------------------
--- 4. CHỨC NĂNG 1: ANTI-HIT (CHỐNG QUÁI ĐÁNH & CHỐNG RAGDOLL)
+-- 4. LOGIC NHẬN DIỆN TRỨNG
 ---------------------------------------------------------
-local isAntiHit = false
-local antiHitConn = nil
-
-antiHitBtn.MouseButton1Click:Connect(function()
-    isAntiHit = not isAntiHit
-    antiHitBtn.BackgroundColor3 = isAntiHit and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
-    antiHitBtn.Text = "Chống Quái Đánh: " .. (isAntiHit and "BẬT" or "TẮT")
-
-    if isAntiHit then
-        antiHitConn = RunService.Stepped:Connect(function()
-            local char = LocalPlayer.Character
-            if char then
-                local hum = char:FindFirstChildOfClass("Humanoid")
-                if hum then
-                    hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-                    hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-                end
-                for _, part in pairs(char:GetChildren()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end
-        end)
-    else
-        if antiHitConn then antiHitConn:Disconnect(); antiHitConn = nil end
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CanCollide = true
-        end
-    end
-end)
-
----------------------------------------------------------
--- 5. CHỨC NĂNG 2: AUTO FLY KHI CÓ TRỨNG (QUÉT SÂU THỰC TẾ)
----------------------------------------------------------
-local isAutoFly = false
-local isFlying = false
-local bodyPos = nil
-
-local function startFlyUp()
-    local char = LocalPlayer.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    
-    if not bodyPos or not bodyPos.Parent then
-        bodyPos = Instance.new("BodyPosition")
-        bodyPos.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-        bodyPos.D = 1200
-        bodyPos.P = 10000
-        -- Nâng nhân vật lên cao 35 stud so với vị trí hiện tại
-        bodyPos.Position = char.HumanoidRootPart.Position + Vector3.new(0, 35, 0)
-        bodyPos.Parent = char.HumanoidRootPart
-    end
-    isFlying = true
-    statusLabel.Text = "🚀 ĐÃ PHÁT HIỆN TRỨNG -> ĐANG BAY LÊN!"
-    statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
-end
-
-local function stopFly()
-    if bodyPos then
-        bodyPos:Destroy()
-        bodyPos = nil
-    end
-    isFlying = false
-    statusLabel.Text = "Trạng thái: Chưa nhặt trứng"
-    statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-end
-
--- Hàm kiểm tra xem nhân vật/balo có đang giữ trứng hay không
 local function isHoldingEgg()
     local char = LocalPlayer.Character
     local backpack = LocalPlayer:FindFirstChild("Backpack")
     
-    -- Quét trong balo
     if backpack then
         for _, item in pairs(backpack:GetChildren()) do
             if item.Name:lower():find("egg") or item.Name:lower():find("trung") then
@@ -193,7 +121,6 @@ local function isHoldingEgg()
         end
     end
     
-    -- Quét trực tiếp trên người (bao gồm Tool, Model hoặc Part được Weld vào người)
     if char then
         for _, child in pairs(char:GetChildren()) do
             if child:IsA("Tool") or child:IsA("Model") or child:IsA("Part") or child:IsA("MeshPart") then
@@ -207,47 +134,126 @@ local function isHoldingEgg()
     return false
 end
 
+---------------------------------------------------------
+-- 5. CHỨC NĂNG 1: BAY LÊN ĐỘ CAO CỐ ĐỊNH & ĐI TRÊN KHÔNG
+---------------------------------------------------------
+local isAutoFly = false
+local isAirWalking = false
+local airPlatform = nil
+
+local function enableAirWalk()
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = char.HumanoidRootPart
+
+    -- Dịch chuyển nhân vật lên thẳng 35 stud trên không
+    hrp.CFrame = hrp.CFrame + Vector3.new(0, 35, 0)
+
+    -- Tạo sàn tàng hình để đi bộ trên không mượt mà
+    if not airPlatform or not airPlatform.Parent then
+        airPlatform = Instance.new("Part")
+        airPlatform.Size = Vector3.new(15, 1, 15)
+        airPlatform.Transparency = 1 -- Tàng hình
+        airPlatform.Anchored = true
+        airPlatform.CanCollide = true
+        airPlatform.Parent = workspace
+    end
+
+    isAirWalking = true
+    statusLabel.Text = "🚀 ĐÃ BAY LÊN KHÔNG TẬN -> ĐANG ĐI TRÊN KHÔNG!"
+    statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
+end
+
+local function disableAirWalk()
+    if airPlatform then
+        airPlatform:Destroy()
+        airPlatform = nil
+    end
+    isAirWalking = false
+    statusLabel.Text = "Trạng thái: Chưa nhặt trứng"
+    statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+end
+
 autoFlyBtn.MouseButton1Click:Connect(function()
     isAutoFly = not isAutoFly
     autoFlyBtn.BackgroundColor3 = isAutoFly and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
-    autoFlyBtn.Text = "Lụm Trứng Tự Bay Lên: " .. (isAutoFly and "BẬT" or "TẮT")
+    autoFlyBtn.Text = "Trứng -> Bay & Đi Trên Không: " .. (isAutoFly and "BẬT" or "TẮT")
     
     if not isAutoFly then
-        stopFly()
+        disableAirWalk()
     end
 end)
 
+-- Giữ sàn tàng hình ngay dưới chân khi đi trên không
 RunService.Heartbeat:Connect(function()
     if isAutoFly then
         local hasEgg = isHoldingEgg()
-        if hasEgg and not isFlying then
-            startFlyUp()
-        elseif not hasEgg and isFlying then
-            stopFly()
+        if hasEgg and not isAirWalking then
+            enableAirWalk()
+        elseif not hasEgg and isAirWalking then
+            disableAirWalk()
+        end
+    end
+
+    if isAirWalking and airPlatform then
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local pos = char.HumanoidRootPart.Position
+            airPlatform.CFrame = CFrame.new(pos.X, pos.Y - 3.2, pos.Z)
         end
     end
 end)
 
 ---------------------------------------------------------
--- 6. CHỨC NĂNG 3: TĂNG TỐC CHẠY (SPEED BOOST)
+-- 6. CHỨC NĂNG 2: SIÊU TỐC ĐỘ (ÉP TỐC DÙNG CFRAME CHỐNG LAG)
 ---------------------------------------------------------
 local isSpeedBoost = false
+local speedValue = 1.8 -- Tốc độ di chuyển tùy chỉnh mượt mà
 
 speedBoostBtn.MouseButton1Click:Connect(function()
     isSpeedBoost = not isSpeedBoost
     speedBoostBtn.BackgroundColor3 = isSpeedBoost and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
-    speedBoostBtn.Text = "Tăng Tốc Chạy Bá Đạo: " .. (isSpeedBoost and "BẬT" or "TẮT")
+    speedBoostBtn.Text = "Siêu Tốc Độ: " .. (isSpeedBoost and "BẬT" or "TẮT")
 end)
 
 RunService.RenderStepped:Connect(function()
-    local char = LocalPlayer.Character
-    if char then
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if hum then
-            if isSpeedBoost then
-                hum.WalkSpeed = 35 -- Tốc độ chạy nhanh vượt trội
-            elseif not isAntiHit and hum.WalkSpeed > 16 then
-                hum.WalkSpeed = 16
+    if isSpeedBoost then
+        local char = LocalPlayer.Character
+        if char then
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hum and hrp and hum.MoveDirection.Magnitude > 0 then
+                -- Đẩy nhân vật di chuyển theo hướng nhấn phím/joystick bằng CFrame
+                hrp.CFrame = hrp.CFrame + (hum.MoveDirection * speedValue)
+            end
+        end
+    end
+end)
+
+---------------------------------------------------------
+-- 7. CHỨC NĂNG 3: CHỐNG QUÁI ĐÁNH (ANTI-HIT)
+---------------------------------------------------------
+local isAntiHit = false
+
+antiHitBtn.MouseButton1Click:Connect(function()
+    isAntiHit = not isAntiHit
+    antiHitBtn.BackgroundColor3 = isAntiHit and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
+    antiHitBtn.Text = "Chống Quái Đánh: " .. (isAntiHit and "BẬT" or "TẮT")
+end)
+
+RunService.Stepped:Connect(function()
+    if isAntiHit then
+        local char = LocalPlayer.Character
+        if char then
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum then
+                hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+                hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+            end
+            for _, part in pairs(char:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
             end
         end
     end

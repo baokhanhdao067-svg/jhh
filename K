@@ -1,166 +1,56 @@
+-- =========================================================
+-- STEAL AN EGG - ULTIMATE PRO MAX ENGINE (BYPASS & AUTO-FARM)
+-- =========================================================
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
--- CLEANUP UI CŨ
+-- GUI CLEANUP
 local CoreGui = game:GetService("CoreGui")
 local parentGui = CoreGui:FindFirstChild("RobloxGui") or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
-if parentGui:FindFirstChild("StealEggUltimateGod") then
-    parentGui.StealEggUltimateGod:Destroy()
+if parentGui:FindFirstChild("SAEPRO_MAX_HUB") then
+    parentGui.SAEPRO_MAX_HUB:Destroy()
 end
 
----------------------------------------------------------
--- TỌA ĐỘ VÙNG AN TOÀN GROUND (LƯỚT SÁT MẶT ĐẤT)
----------------------------------------------------------
-local SAFE_ZONE_POS = Vector3.new(465.18, 67.08, -364.07)
+-- TỌA ĐỘ VỀ BASE
+local BASE_SAFE_POS = Vector3.new(465.18, 67.08, -364.07)
 
--- SCREEN GUI MAIN
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "StealEggUltimateGod"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = parentGui
-
----------------------------------------------------------
--- 1. NÚT NỔI TOGGLE MENU
----------------------------------------------------------
-local toggleMenuBtn = Instance.new("TextButton")
-toggleMenuBtn.Name = "ToggleMenuBtn"
-toggleMenuBtn.Size = UDim2.new(0, 90, 0, 35)
-toggleMenuBtn.Position = UDim2.new(0, 15, 0, 15)
-toggleMenuBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-toggleMenuBtn.Text = "MENU [ON]"
-toggleMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleMenuBtn.TextSize = 13
-toggleMenuBtn.Font = Enum.Font.SourceSansBold
-toggleMenuBtn.Parent = screenGui
-
-local btnCorner = Instance.new("UICorner")
-btnCorner.CornerRadius = UDim.new(0, 8)
-btnCorner.Parent = toggleMenuBtn
+-- BIẾN CẤU HÌNH LOGIC
+local Config = {
+    AutoSteal = false,
+    AutoReturn = false,
+    AutoPickDrop = false,
+    GodMode = false,
+    Speed = 220,
+    FastPickup = true
+}
 
 ---------------------------------------------------------
--- 2. KHUNG MENU CHÍNH
+-- NETWORK BYPASS & ANTICHEAT PROOF
 ---------------------------------------------------------
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 280, 0, 310)
-mainFrame.Position = UDim2.new(0.5, -140, 0.25, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-mainFrame.BorderSizePixel = 0
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = screenGui
-
-local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 10)
-frameCorner.Parent = mainFrame
-
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, 0, 0, 40)
-titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-titleLabel.Text = "👑 STEAL AN EGG - GROUND MOVE 👑"
-titleLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
-titleLabel.TextSize = 12
-titleLabel.Font = Enum.Font.SourceSansBold
-titleLabel.Parent = mainFrame
-
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 10)
-titleCorner.Parent = titleLabel
-
-local menuVisible = true
-toggleMenuBtn.MouseButton1Click:Connect(function()
-    menuVisible = not menuVisible
-    mainFrame.Visible = menuVisible
-    toggleMenuBtn.Text = menuVisible and "MENU [ON]" or "MENU [OFF]"
-    toggleMenuBtn.BackgroundColor3 = menuVisible and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(100, 100, 100)
+pcall(function()
+    sethiddenproperty(LocalPlayer, "SimulationRadius", 1000)
+    sethiddenproperty(LocalPlayer, "MaxSimulationRadius", 1000)
 end)
 
 ---------------------------------------------------------
--- 3. BUTTONS & CHỈNH SPEED
+-- FUNCTION: KIỂM TRA MANG TRỨNG & QUÉT TRỨNG
 ---------------------------------------------------------
-local function createToggle(text, posY)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 250, 0, 38)
-    btn.Position = UDim2.new(0.5, -125, 0, posY)
-    btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-    btn.Text = text .. ": TẮT"
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 12
-    btn.Font = Enum.Font.SourceSansBold
-    btn.Parent = mainFrame
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = btn
-
-    return btn
-end
-
-local autoFlyBtn = createToggle("Trộm Trứng -> Lướt Đất Về Ground", 50)
-local speedToggleBtn = createToggle("Bật Siêu Tốc Độ Chạy (Speed Hack)", 95)
-
-local speedFrame = Instance.new("Frame")
-speedFrame.Size = UDim2.new(0, 250, 0, 40)
-speedFrame.Position = UDim2.new(0.5, -125, 0, 140)
-speedFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-speedFrame.Parent = mainFrame
-
-local speedCorner = Instance.new("UICorner")
-speedCorner.CornerRadius = UDim.new(0, 8)
-speedCorner.Parent = speedFrame
-
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Size = UDim2.new(0, 120, 1, 0)
-speedLabel.BackgroundTransparency = 1
-speedLabel.Text = "Tốc độ Lướt/Chạy:"
-speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedLabel.TextSize = 11
-speedLabel.Font = Enum.Font.SourceSansBold
-speedLabel.Parent = speedFrame
-
-local speedBox = Instance.new("TextBox")
-speedBox.Size = UDim2.new(0, 120, 0, 28)
-speedBox.Position = UDim2.new(1, -125, 0.5, -14)
-speedBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-speedBox.Text = "200"
-speedBox.TextColor3 = Color3.fromRGB(50, 255, 50)
-speedBox.TextSize = 13
-speedBox.Font = Enum.Font.SourceSansBold
-speedBox.Parent = speedFrame
-
-local boxCorner = Instance.new("UICorner")
-boxCorner.CornerRadius = UDim.new(0, 6)
-boxCorner.Parent = speedBox
-
-local antiHitBtn = createToggle("Tắt Touch/Hitbox (Bất Tử)", 188)
-
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, 0, 0, 30)
-statusLabel.Position = UDim2.new(0, 0, 0, 270)
-statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "Trạng thái: Đang chờ trộm trứng..."
-statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-statusLabel.TextSize = 11
-statusLabel.Font = Enum.Font.SourceSans
-statusLabel.Parent = mainFrame
-
----------------------------------------------------------
--- 4. QUÉT TRỨNG TẠI NHÂN VẬT & TÚI ĐỒ
----------------------------------------------------------
-local function isCarryingEggSpecial()
+local function isCarryingEgg()
     local char = LocalPlayer.Character
     if not char then return false end
-    
+
     for _, obj in pairs(char:GetDescendants()) do
         local n = obj.Name:lower()
         if n:find("egg") or n:find("trung") then
             return true
         end
     end
-    
+
     for _, part in pairs(char:GetChildren()) do
         if part:IsA("BasePart") or part:IsA("Model") or part:IsA("Tool") then
             if part:FindFirstChildOfClass("Weld") or part:FindFirstChildOfClass("WeldConstraint") then
@@ -170,7 +60,7 @@ local function isCarryingEggSpecial()
             end
         end
     end
-    
+
     local backpack = LocalPlayer:FindFirstChild("Backpack")
     if backpack and #backpack:GetChildren() > 0 then
         return true
@@ -179,105 +69,104 @@ local function isCarryingEggSpecial()
     return false
 end
 
----------------------------------------------------------
--- 5. LOGIC LƯỚT MẶT ĐẤT VỀ GROUND (NO FLY / NO DEATH)
----------------------------------------------------------
-local isAutoFly = false
-local currentTween = nil
-local isTweening = false
-
-local function stopTween()
-    if currentTween then
-        currentTween:Cancel()
-        currentTween = nil
-    end
-    isTweening = false
-    
+local function getNearestEgg()
     local char = LocalPlayer.Character
-    if char then
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        if hrp then hrp.AssemblyLinearVelocity = Vector3.new(0,0,0) end
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
+    local hrp = char.HumanoidRootPart
+
+    local closestEgg = nil
+    local minDistance = 500
+
+    for _, v in pairs(Workspace:GetDescendants()) do
+        if v:IsA("BasePart") or v:IsA("Model") then
+            local name = v.Name:lower()
+            if (name:find("egg") or name:find("trung")) and not v:IsDescendantOf(char) then
+                local pos = v:IsA("Model") and (v.PrimaryPart and v.PrimaryPart.Position or v:GetAttribute("Position")) or v.Position
+                if pos then
+                    local dist = (pos - hrp.Position).Magnitude
+                    if dist < minDistance then
+                        minDistance = dist
+                        closestEgg = {Object = v, Position = pos}
+                    end
+                end
+            end
+        end
     end
+    return closestEgg
 end
 
-local function tweenGroundToHome()
+---------------------------------------------------------
+-- ADVANCED GROUND GLIDE ENGINE (SMOOTH & NO-DELAY)
+---------------------------------------------------------
+local isGLiding = false
+
+local function smartGlideTo(targetPos)
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     local hrp = char.HumanoidRootPart
+    local hum = char:FindFirstChildOfClass("Humanoid")
 
-    isTweening = true
-    statusLabel.Text = "🏃 PHÁT HIỆN TRỨNG -> ĐANG LƯỚT ĐẤT VỀ GROUND..."
-    statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
+    isGLiding = true
+    if hum then hum.PlatformStand = true end
 
-    local tweenSpeed = tonumber(speedBox.Text) or 200
-    
-    -- Giữ nguyên độ cao Y của nhân vật hiện tại để lướt sát mặt đất, hướng tới tọa độ Ground
-    local currentY = hrp.Position.Y
-    local targetPos = Vector3.new(SAFE_ZONE_POS.X, currentY, SAFE_ZONE_POS.Z)
-    
-    local distance = (targetPos - hrp.Position).Magnitude
-    local timeToReach = math.max(distance / tweenSpeed, 0.2)
+    while isGLiding and char and hrp do
+        local currentPos = hrp.Position
+        local targetGround = Vector3.new(targetPos.X, currentPos.Y, targetPos.Z)
+        local dir = (targetGround - currentPos)
+        local dist = dir.Magnitude
 
-    local tweenInfo = TweenInfo.new(timeToReach, Enum.EasingStyle.Linear)
-    currentTween = TweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(targetPos)})
-    currentTween:Play()
-    currentTween.Completed:Wait()
+        if dist < 3 then break end
 
-    if not isAutoFly or not isCarryingEggSpecial() then stopTween() return end
+        -- Lướt sát mặt đất chia theo DeltaTime mượt 100%
+        local step = math.min(dist, Config.Speed * task.wait())
+        hrp.CFrame = CFrame.new(currentPos + (dir.Unit * step))
+    end
 
-    -- Bước nhỏ chỉnh tọa độ chuẩn Y khi tới nơi
-    local finalPos = Vector3.new(SAFE_ZONE_POS.X, SAFE_ZONE_POS.Y + 2, SAFE_ZONE_POS.Z)
-    local finalTween = TweenService:Create(hrp, TweenInfo.new(0.2, Enum.EasingStyle.Linear), {CFrame = CFrame.new(finalPos)})
-    finalTween:Play()
-    finalTween.Completed:Wait()
-
-    stopTween()
-    statusLabel.Text = "Trạng thái: Đã về tới Ground an toàn!"
-    statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
+    if hum then hum.PlatformStand = false end
+    isGLiding = false
 end
 
-autoFlyBtn.MouseButton1Click:Connect(function()
-    isAutoFly = not isAutoFly
-    autoFlyBtn.BackgroundColor3 = isAutoFly and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
-    autoFlyBtn.Text = "Trộm Trứng -> Lướt Đất Về Ground: " .. (isAutoFly and "BẬT" or "TẮT")
-    if not isAutoFly then 
-        stopTween() 
-        statusLabel.Text = "Trạng thái: Đã tắt chức năng lướt."
-        statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    else
-        statusLabel.Text = "Trạng thái: Đang chờ trộm trứng..."
-    end
-end)
+---------------------------------------------------------
+-- CORE AUTO LOOP
+---------------------------------------------------------
+task.spawn(function()
+    while task.wait(0.05) do
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            
+            -- Trạng thái 1: Đang mang trứng -> Lướt tốc độ cao về Base
+            if Config.AutoReturn and isCarryingEgg() then
+                smartGlideTo(BASE_SAFE_POS)
+            
+            -- Trạng thái 2: Tự động lụm trứng rơi / Trứng trên đất
+            elseif Config.AutoPickDrop and not isCarryingEgg() then
+                local eggData = getNearestEgg()
+                if eggData then
+                    -- Hút / Dịch chuyển siêu tốc tức thì tới trứng
+                    char.HumanoidRootPart.CFrame = CFrame.new(eggData.Position + Vector3.new(0, 1.5, 0))
+                    task.wait(0.08)
+                end
+            end
 
-RunService.Heartbeat:Connect(function()
-    if isAutoFly and not isTweening then
-        if isCarryingEggSpecial() then
-            task.spawn(tweenGroundToHome)
         end
     end
 end)
 
 ---------------------------------------------------------
--- 6. XUYÊN TƯỜNG (NOCLIP) KHI LƯỚT ĐỂ KHÔNG BỊ KẸT / CHẾT
+-- GODMODE & NOCLIP LOOP
 ---------------------------------------------------------
-local isAntiHit = false
-
-antiHitBtn.MouseButton1Click:Connect(function()
-    isAntiHit = not isAntiHit
-    antiHitBtn.BackgroundColor3 = isAntiHit and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
-    antiHitBtn.Text = "Tắt Touch/Hitbox: " .. (isAntiHit and "BẬT" or "TẮT")
-end)
-
 RunService.Stepped:Connect(function()
     local char = LocalPlayer.Character
     if char then
         local hum = char:FindFirstChildOfClass("Humanoid")
-        if hum and isTweening then
-            hum.Health = hum.MaxHealth -- Giữ máu không bị quái hay môi trường đánh chết
-        end
         
-        -- Khi đang lướt về nhà hoặc bật AntiHit -> Tắt va chạm để lướt mượt xuyên vật cản
-        if isAntiHit or isTweening then
+        if hum and (Config.GodMode or isGLiding) then
+            hum.Health = hum.MaxHealth
+            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+            hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+        end
+
+        if Config.GodMode or isGLiding then
             for _, part in pairs(char:GetDescendants()) do
                 if part:IsA("BasePart") then
                     part.CanCollide = false
@@ -289,37 +178,121 @@ RunService.Stepped:Connect(function()
 end)
 
 ---------------------------------------------------------
--- 7. CHỈNH SPEED CHẠY BÌNH THƯỜNG
+-- CREATING MODERN UI
 ---------------------------------------------------------
-local isSpeedEnabled = false
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SAEPRO_MAX_HUB"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = parentGui
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 80, 0, 30)
+toggleBtn.Position = UDim2.new(0, 10, 0, 10)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+toggleBtn.Text = "HUB [ON]"
+toggleBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.TextSize = 12
+toggleBtn.Parent = screenGui
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0, 6)
+toggleCorner.Parent = toggleBtn
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 290, 0, 320)
+mainFrame.Position = UDim2.new(0.5, -145, 0.2, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 10)
+frameCorner.Parent = mainFrame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+title.Text = "🚀 STEAL AN EGG - PRO MAX HUB 🚀"
+title.TextColor3 = Color3.fromRGB(255, 215, 0)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 13
+title.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 10)
+titleCorner.Parent = title
+
+toggleBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+    toggleBtn.Text = mainFrame.Visible and "HUB [ON]" or "HUB [OFF]"
+end)
+
+local function makeButton(text, posY, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 260, 0, 36)
+    btn.Position = UDim2.new(0.5, -130, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    btn.Text = text .. ": OFF"
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 12
+    btn.Parent = mainFrame
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+
+    local state = false
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        btn.BackgroundColor3 = state and Color3.fromRGB(40, 180, 70) or Color3.fromRGB(180, 40, 40)
+        btn.Text = text .. ": " .. (state and "ON" or "OFF")
+        callback(state)
+    end)
+    return btn
+end
+
+makeButton("1. Auto Lướt Về Base Khi Cầm Trứng", 50, function(s) Config.AutoReturn = s end)
+makeButton("2. Auto Nhặt / Hút Trứng Rơi Siêu Tốc", 95, function(s) Config.AutoPickDrop = s end)
+makeButton("3. Bất Tử & Tắt Va Chạm (Bypass Death)", 140, function(s) Config.GodMode = s end)
+
+-- CHỈNH TỐC ĐỘ
+local speedFrame = Instance.new("Frame")
+speedFrame.Size = UDim2.new(0, 260, 0, 40)
+speedFrame.Position = UDim2.new(0.5, -130, 0, 185)
+speedFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+speedFrame.Parent = mainFrame
+
+local speedCorner = Instance.new("UICorner")
+speedCorner.CornerRadius = UDim.new(0, 6)
+speedCorner.Parent = speedFrame
+
+local speedText = Instance.new("TextLabel")
+speedText.Size = UDim2.new(0, 130, 1, 0)
+speedText.BackgroundTransparency = 1
+speedText.Text = " Tốc độ Glide (Bypass):"
+speedText.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedText.Font = Enum.Font.SourceSansBold
+speedText.TextSize = 12
+speedText.Parent = speedFrame
+
+local speedBox = Instance.new("TextBox")
+speedBox.Size = UDim2.new(0, 110, 0, 28)
+speedBox.Position = UDim2.new(1, -115, 0.5, -14)
+speedBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+speedBox.Text = "220"
+speedBox.TextColor3 = Color3.fromRGB(50, 255, 50)
+speedBox.Font = Enum.Font.SourceSansBold
+speedBox.TextSize = 13
+speedBox.Parent = speedFrame
 
 speedBox.FocusLost:Connect(function()
-    local num = tonumber(speedBox.Text)
-    if not num then
-        speedBox.Text = "200"
+    local val = tonumber(speedBox.Text)
+    if val then
+        Config.Speed = math.clamp(val, 50, 1000)
     else
-        speedBox.Text = tostring(math.clamp(num, 1, 10000))
-    end
-end)
-
-speedToggleBtn.MouseButton1Click:Connect(function()
-    isSpeedEnabled = not isSpeedEnabled
-    speedToggleBtn.BackgroundColor3 = isSpeedEnabled and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
-    speedToggleBtn.Text = "Bật Siêu Tốc Độ: " .. (isSpeedEnabled and "BẬT" or "TẮT")
-end)
-
-RunService.RenderStepped:Connect(function()
-    if isSpeedEnabled and not isTweening then
-        local char = LocalPlayer.Character
-        if char then
-            local hum = char:FindFirstChildOfClass("Humanoid")
-            local hrp = char:FindFirstChild("HumanoidRootPart")
-            local currentSpeed = tonumber(speedBox.Text) or 200
-            
-            if hum and hrp and hum.MoveDirection.Magnitude > 0 then
-                local moveDir = hum.MoveDirection
-                hrp.AssemblyLinearVelocity = Vector3.new(moveDir.X * currentSpeed, hrp.AssemblyLinearVelocity.Y, moveDir.Z * currentSpeed)
-            end
-        end
+        speedBox.Text = tostring(Config.Speed)
     end
 end)

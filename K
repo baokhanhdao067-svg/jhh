@@ -1,5 +1,6 @@
 -- =========================================================
--- STEAL AN EGG - ULTIMATE PRO MAX ENGINE (BYPASS & AUTO-FARM)
+-- STEAL AN EGG - GOD HUB V3 (BYPASS UPDATE & ALL-IN-ONE)
+-- Supported Hub Style: Big Froot, Ajjans, Zeroin, Chilli, Fyy
 -- =========================================================
 
 local Players = game:GetService("Players")
@@ -12,33 +13,75 @@ local LocalPlayer = Players.LocalPlayer
 -- GUI CLEANUP
 local CoreGui = game:GetService("CoreGui")
 local parentGui = CoreGui:FindFirstChild("RobloxGui") or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
-if parentGui:FindFirstChild("SAEPRO_MAX_HUB") then
-    parentGui.SAEPRO_MAX_HUB:Destroy()
+if parentGui:FindFirstChild("SAE_GOD_HUB_V3") then
+    parentGui.SAE_GOD_HUB_V3:Destroy()
 end
 
--- TỌA ĐỘ VỀ BASE
+-- TỌA ĐỘ SAFE BASE CỦA BẠN
 local BASE_SAFE_POS = Vector3.new(465.18, 67.08, -364.07)
 
--- BIẾN CẤU HÌNH LOGIC
+-- CẤU HÌNH
 local Config = {
     AutoSteal = false,
     AutoReturn = false,
     AutoPickDrop = false,
+    AutoHatch = false,
+    AutoSell = false,
     GodMode = false,
-    Speed = 220,
-    FastPickup = true
+    Speed = 250,
+    FastInstantSteal = true
 }
 
 ---------------------------------------------------------
--- NETWORK BYPASS & ANTICHEAT PROOF
+-- NETWORK BYPASS & SIMULATION RADIUS
 ---------------------------------------------------------
 pcall(function()
-    sethiddenproperty(LocalPlayer, "SimulationRadius", 1000)
-    sethiddenproperty(LocalPlayer, "MaxSimulationRadius", 1000)
+    sethiddenproperty(LocalPlayer, "SimulationRadius", 5000)
+    sethiddenproperty(LocalPlayer, "MaxSimulationRadius", 5000)
 end)
 
 ---------------------------------------------------------
--- FUNCTION: KIỂM TRA MANG TRỨNG & QUÉT TRỨNG
+-- FIX LỖI NHẶT TRỨNG GAME UPDATE (CƠ CHẾ PROXIMITY PROMPT & REMOTE)
+---------------------------------------------------------
+local function forceStealEgg(eggObject)
+    if not eggObject then return end
+    
+    -- 1. Kích hoạt toàn bộ ProximityPrompt có trong viên trứng (Cách nhặt chính chủ)
+    for _, prompt in pairs(eggObject:GetDescendants()) do
+        if prompt:IsA("ProximityPrompt") then
+            prompt.HoldDuration = 0
+            if fireproximityprompt then
+                fireproximityprompt(prompt)
+            else
+                prompt:InputHoldBegin()
+                task.wait(0.01)
+                prompt:InputHoldEnd()
+            end
+        end
+    end
+
+    -- 2. Kích hoạt ClickDetector nếu game đổi sang cơ chế Click
+    for _, clicker in pairs(eggObject:GetDescendants()) do
+        if clicker:IsA("ClickDetector") and fireclickdetector then
+            fireclickdetector(clicker)
+        end
+    end
+
+    -- 3. Dò tìm RemoteEvent ẩn để trigger nhặt trứng trực tiếp từ Server
+    for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
+        if remote:IsA("RemoteEvent") or remote:IsA("UnreliableRemoteEvent") then
+            local rName = remote.Name:lower()
+            if rName:find("steal") or rName:find("egg") or rName:find("pick") or rName:find("grab") or rName:find("collect") then
+                pcall(function()
+                    remote:FireServer(eggObject)
+                end)
+            end
+        end
+    end
+end
+
+---------------------------------------------------------
+-- NHẬN DIỆN MANG TRỨNG & QUÉT TRỨNG TỐI ƯU
 ---------------------------------------------------------
 local function isCarryingEgg()
     local char = LocalPlayer.Character
@@ -69,13 +112,13 @@ local function isCarryingEgg()
     return false
 end
 
-local function getNearestEgg()
+local function getTargetEgg()
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
     local hrp = char.HumanoidRootPart
 
     local closestEgg = nil
-    local minDistance = 500
+    local shortestDist = 2000
 
     for _, v in pairs(Workspace:GetDescendants()) do
         if v:IsA("BasePart") or v:IsA("Model") then
@@ -84,8 +127,8 @@ local function getNearestEgg()
                 local pos = v:IsA("Model") and (v.PrimaryPart and v.PrimaryPart.Position or v:GetAttribute("Position")) or v.Position
                 if pos then
                     local dist = (pos - hrp.Position).Magnitude
-                    if dist < minDistance then
-                        minDistance = dist
+                    if dist < shortestDist then
+                        shortestDist = dist
                         closestEgg = {Object = v, Position = pos}
                     end
                 end
@@ -96,20 +139,20 @@ local function getNearestEgg()
 end
 
 ---------------------------------------------------------
--- ADVANCED GROUND GLIDE ENGINE (SMOOTH & NO-DELAY)
+-- ENGINE GLIDE & INSTANT TELEPORT
 ---------------------------------------------------------
-local isGLiding = false
+local isMovingToTarget = false
 
-local function smartGlideTo(targetPos)
+local function smartMoveTo(targetPos)
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     local hrp = char.HumanoidRootPart
     local hum = char:FindFirstChildOfClass("Humanoid")
 
-    isGLiding = true
+    isMovingToTarget = true
     if hum then hum.PlatformStand = true end
 
-    while isGLiding and char and hrp do
+    while isMovingToTarget and char and hrp do
         local currentPos = hrp.Position
         local targetGround = Vector3.new(targetPos.X, currentPos.Y, targetPos.Z)
         local dir = (targetGround - currentPos)
@@ -117,34 +160,55 @@ local function smartGlideTo(targetPos)
 
         if dist < 3 then break end
 
-        -- Lướt sát mặt đất chia theo DeltaTime mượt 100%
         local step = math.min(dist, Config.Speed * task.wait())
         hrp.CFrame = CFrame.new(currentPos + (dir.Unit * step))
     end
 
     if hum then hum.PlatformStand = false end
-    isGLiding = false
+    isMovingToTarget = false
 end
 
 ---------------------------------------------------------
--- CORE AUTO LOOP
+-- AUTOMATION MAIN LOOP
 ---------------------------------------------------------
 task.spawn(function()
-    while task.wait(0.05) do
+    while task.wait(0.03) do
         local char = LocalPlayer.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
-            
-            -- Trạng thái 1: Đang mang trứng -> Lướt tốc độ cao về Base
+            local hrp = char.HumanoidRootPart
+
+            -- TH1: Đang cầm trứng -> Auto Return về Base
             if Config.AutoReturn and isCarryingEgg() then
-                smartGlideTo(BASE_SAFE_POS)
-            
-            -- Trạng thái 2: Tự động lụm trứng rơi / Trứng trên đất
-            elseif Config.AutoPickDrop and not isCarryingEgg() then
-                local eggData = getNearestEgg()
+                smartMoveTo(BASE_SAFE_POS)
+
+            -- TH2: Đang mở Auto Steal / Auto Pick -> Tìm trứng để cướp & nhặt
+            elseif (Config.AutoSteal or Config.AutoPickDrop) and not isCarryingEgg() then
+                local eggData = getTargetEgg()
                 if eggData then
-                    -- Hút / Dịch chuyển siêu tốc tức thì tới trứng
-                    char.HumanoidRootPart.CFrame = CFrame.new(eggData.Position + Vector3.new(0, 1.5, 0))
-                    task.wait(0.08)
+                    if Config.FastInstantSteal then
+                        -- Teleport siêu tốc tức thì tới sát viên trứng
+                        hrp.CFrame = CFrame.new(eggData.Position + Vector3.new(0, 1.5, 0))
+                        forceStealEgg(eggData.Object)
+                        task.wait(0.05)
+                    else
+                        smartMoveTo(eggData.Position)
+                        forceStealEgg(eggData.Object)
+                    end
+                end
+            end
+
+            -- TH3: Auto Hatch / Auto Sell (Gửi RemoteEvent nền)
+            if Config.AutoHatch or Config.AutoSell then
+                for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
+                    if remote:IsA("RemoteEvent") then
+                        local rName = remote.Name:lower()
+                        if Config.AutoHatch and (rName:find("hatch") or rName:find("open")) then
+                            pcall(function() remote:FireServer() end)
+                        end
+                        if Config.AutoSell and (rName:find("sell") or rName:find("delete")) then
+                            pcall(function() remote:FireServer() end)
+                        end
+                    end
                 end
             end
 
@@ -153,20 +217,20 @@ task.spawn(function()
 end)
 
 ---------------------------------------------------------
--- GODMODE & NOCLIP LOOP
+-- GODMODE & NOCLIP LOOP (BYPASS DEATH)
 ---------------------------------------------------------
 RunService.Stepped:Connect(function()
     local char = LocalPlayer.Character
     if char then
         local hum = char:FindFirstChildOfClass("Humanoid")
         
-        if hum and (Config.GodMode or isGLiding) then
+        if hum and (Config.GodMode or isMovingToTarget) then
             hum.Health = hum.MaxHealth
             hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
             hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
         end
 
-        if Config.GodMode or isGLiding then
+        if Config.GodMode or isMovingToTarget then
             for _, part in pairs(char:GetDescendants()) do
                 if part:IsA("BasePart") then
                     part.CanCollide = false
@@ -178,19 +242,19 @@ RunService.Stepped:Connect(function()
 end)
 
 ---------------------------------------------------------
--- CREATING MODERN UI
+-- GUI CHUYÊN NGHIỆP CỦA CÁC HUB
 ---------------------------------------------------------
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SAEPRO_MAX_HUB"
+screenGui.Name = "SAE_GOD_HUB_V3"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = parentGui
 
 local toggleBtn = Instance.new("TextButton")
-toggleBtn.Size = UDim2.new(0, 80, 0, 30)
+toggleBtn.Size = UDim2.new(0, 90, 0, 32)
 toggleBtn.Position = UDim2.new(0, 10, 0, 10)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-toggleBtn.Text = "HUB [ON]"
-toggleBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+toggleBtn.Text = "GOD HUB [ON]"
+toggleBtn.TextColor3 = Color3.fromRGB(0, 255, 170)
 toggleBtn.Font = Enum.Font.SourceSansBold
 toggleBtn.TextSize = 12
 toggleBtn.Parent = screenGui
@@ -200,39 +264,39 @@ toggleCorner.CornerRadius = UDim.new(0, 6)
 toggleCorner.Parent = toggleBtn
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 290, 0, 320)
-mainFrame.Position = UDim2.new(0.5, -145, 0.2, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+mainFrame.Size = UDim2.new(0, 300, 0, 380)
+mainFrame.Position = UDim2.new(0.5, -150, 0.18, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 
 local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 10)
+frameCorner.CornerRadius = UDim.new(0, 8)
 frameCorner.Parent = mainFrame
 
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 40)
 title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-title.Text = "🚀 STEAL AN EGG - PRO MAX HUB 🚀"
+title.Text = "⚡ STEAL AN EGG - GOD HUB V3 ⚡"
 title.TextColor3 = Color3.fromRGB(255, 215, 0)
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 13
 title.Parent = mainFrame
 
 local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 10)
+titleCorner.CornerRadius = UDim.new(0, 8)
 titleCorner.Parent = title
 
 toggleBtn.MouseButton1Click:Connect(function()
     mainFrame.Visible = not mainFrame.Visible
-    toggleBtn.Text = mainFrame.Visible and "HUB [ON]" or "HUB [OFF]"
+    toggleBtn.Text = mainFrame.Visible and "GOD HUB [ON]" or "GOD HUB [OFF]"
 end)
 
 local function makeButton(text, posY, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 260, 0, 36)
-    btn.Position = UDim2.new(0.5, -130, 0, posY)
+    btn.Size = UDim2.new(0, 270, 0, 34)
+    btn.Position = UDim2.new(0.5, -135, 0, posY)
     btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
     btn.Text = text .. ": OFF"
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -254,15 +318,17 @@ local function makeButton(text, posY, callback)
     return btn
 end
 
-makeButton("1. Auto Lướt Về Base Khi Cầm Trứng", 50, function(s) Config.AutoReturn = s end)
-makeButton("2. Auto Nhặt / Hút Trứng Rơi Siêu Tốc", 95, function(s) Config.AutoPickDrop = s end)
-makeButton("3. Bất Tử & Tắt Va Chạm (Bypass Death)", 140, function(s) Config.GodMode = s end)
+makeButton("1. Instant Steal Egg (Bypass Update Fix)", 50, function(s) Config.AutoSteal = s end)
+makeButton("2. Auto Glide Return Base (Auto Về Base)", 90, function(s) Config.AutoReturn = s end)
+makeButton("3. Auto Pick Dropped Eggs (Hút Trứng Rơi)", 130, function(s) Config.AutoPickDrop = s end)
+makeButton("4. Auto Hatch All Eggs (Auto Mở Trứng)", 170, function(s) Config.AutoHatch = s end)
+makeButton("5. GodMode & Noclip (Chống Chết/Bẫy)", 210, function(s) Config.GodMode = s end)
 
--- CHỈNH TỐC ĐỘ
+-- CHỈNH TỐC ĐỘ SLIDER/BOX
 local speedFrame = Instance.new("Frame")
-speedFrame.Size = UDim2.new(0, 260, 0, 40)
-speedFrame.Position = UDim2.new(0.5, -130, 0, 185)
-speedFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+speedFrame.Size = UDim2.new(0, 270, 0, 38)
+speedFrame.Position = UDim2.new(0.5, -135, 0, 255)
+speedFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
 speedFrame.Parent = mainFrame
 
 local speedCorner = Instance.new("UICorner")
@@ -270,19 +336,19 @@ speedCorner.CornerRadius = UDim.new(0, 6)
 speedCorner.Parent = speedFrame
 
 local speedText = Instance.new("TextLabel")
-speedText.Size = UDim2.new(0, 130, 1, 0)
+speedText.Size = UDim2.new(0, 140, 1, 0)
 speedText.BackgroundTransparency = 1
-speedText.Text = " Tốc độ Glide (Bypass):"
+speedText.Text = " Speed Glide (Bypass):"
 speedText.TextColor3 = Color3.fromRGB(255, 255, 255)
 speedText.Font = Enum.Font.SourceSansBold
 speedText.TextSize = 12
 speedText.Parent = speedFrame
 
 local speedBox = Instance.new("TextBox")
-speedBox.Size = UDim2.new(0, 110, 0, 28)
-speedBox.Position = UDim2.new(1, -115, 0.5, -14)
-speedBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-speedBox.Text = "220"
+speedBox.Size = UDim2.new(0, 110, 0, 26)
+speedBox.Position = UDim2.new(1, -115, 0.5, -13)
+speedBox.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+speedBox.Text = "250"
 speedBox.TextColor3 = Color3.fromRGB(50, 255, 50)
 speedBox.Font = Enum.Font.SourceSansBold
 speedBox.TextSize = 13
@@ -291,7 +357,7 @@ speedBox.Parent = speedFrame
 speedBox.FocusLost:Connect(function()
     local val = tonumber(speedBox.Text)
     if val then
-        Config.Speed = math.clamp(val, 50, 1000)
+        Config.Speed = math.clamp(val, 50, 2000)
     else
         speedBox.Text = tostring(Config.Speed)
     end

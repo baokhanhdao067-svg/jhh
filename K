@@ -2,16 +2,16 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- Clean UI cũ
+-- Cleanup UI cũ
 local CoreGui = game:GetService("CoreGui")
 local parentGui = CoreGui:FindFirstChild("RobloxGui") or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
-if parentGui:FindFirstChild("StealEggGodFix") then
-    parentGui.StealEggGodFix:Destroy()
+if parentGui:FindFirstChild("StealEggUltimateGod") then
+    parentGui.StealEggUltimateGod:Destroy()
 end
 
 -- ScreenGui Main
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "StealEggGodFix"
+screenGui.Name = "StealEggUltimateGod"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = parentGui
 
@@ -53,9 +53,9 @@ frameCorner.Parent = mainFrame
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(1, 0, 0, 40)
 titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-titleLabel.Text = "⚡ STEAL AN EGG - GOD FIX 100% ⚡"
+titleLabel.Text = "👑 STEAL AN EGG - ULTIMATE GOD 👑"
 titleLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
-titleLabel.TextSize = 13
+titleLabel.TextSize = 12
 titleLabel.Font = Enum.Font.SourceSansBold
 titleLabel.Parent = mainFrame
 
@@ -92,7 +92,7 @@ local function createToggle(text, posY)
     return btn
 end
 
-local autoFlyBtn = createToggle("Lụm Trứng -> Bay Vút Lên Trời", 50)
+local autoFlyBtn = createToggle("Lụm Trứng -> Bay & Bất Tử 100%", 50)
 local speedToggleBtn = createToggle("Bật Siêu Tốc Độ (Speed Hack)", 95)
 
 -- KHU VỰC NHẬP TỐC ĐỘ (MAX 10,000)
@@ -129,7 +129,7 @@ local boxCorner = Instance.new("UICorner")
 boxCorner.CornerRadius = UDim.new(0, 6)
 boxCorner.Parent = speedBox
 
-local antiHitBtn = createToggle("Chống Quái Đánh / Bất Tử", 188)
+local antiHitBtn = createToggle("Tắt Touch/Hitbox (Quái Không Chạm)", 188)
 
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, 0, 0, 30)
@@ -142,13 +142,12 @@ statusLabel.Font = Enum.Font.SourceSans
 statusLabel.Parent = mainFrame
 
 ---------------------------------------------------------
--- 4. CƠ CHẾ PHÁT HIỆN TRỨNG CHUYÊN DỤNG CHO STEAL AN EGG
+-- 4. NHẬN DIỆN MANG TRỨNG DÀNH RIÊNG STEAL AN EGG
 ---------------------------------------------------------
 local function isCarryingEggSpecial()
     local char = LocalPlayer.Character
     if not char then return false end
     
-    -- 1. Quét tên chứa Egg/Trung
     for _, obj in pairs(char:GetDescendants()) do
         local n = obj.Name:lower()
         if n:find("egg") or n:find("trung") then
@@ -156,7 +155,6 @@ local function isCarryingEggSpecial()
         end
     end
     
-    -- 2. Quét mối nối Weld đặc thù khi nhân vật cầm/cõng trứng trong game
     for _, part in pairs(char:GetChildren()) do
         if part:IsA("BasePart") or part:IsA("Model") or part:IsA("Tool") then
             if part:FindFirstChildOfClass("Weld") or part:FindFirstChildOfClass("WeldConstraint") then
@@ -167,7 +165,6 @@ local function isCarryingEggSpecial()
         end
     end
     
-    -- 3. Quét Balo
     local backpack = LocalPlayer:FindFirstChild("Backpack")
     if backpack and #backpack:GetChildren() > 0 then
         return true
@@ -177,41 +174,47 @@ local function isCarryingEggSpecial()
 end
 
 ---------------------------------------------------------
--- 5. CHỨC NĂNG 1: AUTO FLY & AIRWALK (BẮT ĐẦU BAY)
+-- 5. BAY KHÔNG CẦN SÀN & CHỐNG CHẠM TOUCH/HITBOX (TRUE AIR FLY)
 ---------------------------------------------------------
 local isAutoFly = false
-local isAirWalking = false
-local airPlatform = nil
+local isFlying = false
+local flyBodyVel = nil
+local flyBodyGiro = nil
+local targetHeight = 0
 
-local function launchAndAirWalk()
+local function startTrueFly()
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     local hrp = char.HumanoidRootPart
 
-    -- Đẩy lực vút lên không trung ngay lập tức
-    hrp.CFrame = hrp.CFrame * CFrame.new(0, 40, 0)
+    -- Bay thẳng lên độ cao 45 stud
+    targetHeight = hrp.Position.Y + 45
+    hrp.CFrame = CFrame.new(hrp.Position.X, targetHeight, hrp.Position.Z)
 
-    -- Sàn tàng hình lơ lửng đi trên không
-    if not airPlatform or not airPlatform.Parent then
-        airPlatform = Instance.new("Part")
-        airPlatform.Size = Vector3.new(25, 1, 25)
-        airPlatform.Transparency = 1
-        airPlatform.Anchored = true
-        airPlatform.CanCollide = true
-        airPlatform.Parent = workspace
+    if not flyBodyVel then
+        flyBodyVel = Instance.new("BodyVelocity")
+        flyBodyVel.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+        flyBodyVel.Velocity = Vector3.zero
+        flyBodyVel.Parent = hrp
     end
 
-    isAirWalking = true
-    statusLabel.Text = "🚀 ĐÃ LỤM TRỨNG -> ĐANG BAY & ĐI TRÊN KHÔNG!"
+    if not flyBodyGiro then
+        flyBodyGiro = Instance.new("BodyGyro")
+        flyBodyGiro.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
+        flyBodyGiro.P = 10000
+        flyBodyGiro.CFrame = hrp.CFrame
+        flyBodyGiro.Parent = hrp
+    end
+
+    isFlying = true
+    statusLabel.Text = "🚀 ĐÃ BAY LÊN KHÔNG - BẤT TỬ CHỐNG ĐÁNH!"
     statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
 end
 
-local function stopAirWalk()
-    if airPlatform then
-        airPlatform:Destroy()
-        airPlatform = nil
-    end
-    isAirWalking = false
+local function stopTrueFly()
+    if flyBodyVel then flyBodyVel:Destroy(); flyBodyVel = nil end
+    if flyBodyGiro then flyBodyGiro:Destroy(); flyBodyGiro = nil end
+    isFlying = false
     statusLabel.Text = "Trạng thái: Chưa có trứng"
     statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 end
@@ -219,31 +222,70 @@ end
 autoFlyBtn.MouseButton1Click:Connect(function()
     isAutoFly = not isAutoFly
     autoFlyBtn.BackgroundColor3 = isAutoFly and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
-    autoFlyBtn.Text = "Lụm Trứng -> Bay Vút Lên Trời: " .. (isAutoFly and "BẬT" or "TẮT")
-    if not isAutoFly then stopAirWalk() end
+    autoFlyBtn.Text = "Lụm Trứng -> Bay & Bất Tử: " .. (isAutoFly and "BẬT" or "TẮT")
+    if not isAutoFly then stopTrueFly() end
 end)
 
 RunService.Heartbeat:Connect(function()
     if isAutoFly then
         local hasEgg = isCarryingEggSpecial()
-        if hasEgg and not isAirWalking then
-            launchAndAirWalk()
-        elseif not hasEgg and isAirWalking then
-            stopAirWalk()
+        if hasEgg and not isFlying then
+            startTrueFly()
+        elseif not hasEgg and isFlying then
+            stopTrueFly()
         end
     end
 
-    if isAirWalking and airPlatform then
+    -- Khóa vị trí trục Y lơ lửng trên không trung khi di chuyển
+    if isFlying and flyBodyVel then
         local char = LocalPlayer.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
-            local pos = char.HumanoidRootPart.Position
-            airPlatform.CFrame = CFrame.new(pos.X, pos.Y - 3.2, pos.Z)
+            local hrp = char.HumanoidRootPart
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            
+            -- Giữ nhân vật luôn lơ lửng đúng độ cao targetHeight
+            hrp.CFrame = CFrame.new(hrp.Position.X, targetHeight, hrp.Position.Z) * hrp.CFrame.Rotation
+            
+            if hum and hum.MoveDirection.Magnitude == 0 then
+                flyBodyVel.Velocity = Vector3.zero
+            end
         end
     end
 end)
 
 ---------------------------------------------------------
--- 6. CHỨC NĂNG 2: SIÊU TỐC ĐỘ MAX 10,000
+-- 6. TẮT HOÀN TOÀN TÍNH NĂNG CHẠY VA CHẠM/HITBOX (NO TOUCH)
+---------------------------------------------------------
+local isAntiHit = false
+
+antiHitBtn.MouseButton1Click:Connect(function()
+    isAntiHit = not isAntiHit
+    antiHitBtn.BackgroundColor3 = isAntiHit and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
+    antiHitBtn.Text = "Tắt Touch/Hitbox: " .. (isAntiHit and "BẬT" or "TẮT")
+end)
+
+-- Ép liên tục mọi Part trong nhân vật ngắt nhận dạng Touch
+RunService.Stepped:Connect(function()
+    if isAntiHit or isFlying then
+        local char = LocalPlayer.Character
+        if char then
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum then
+                hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+                hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+            end
+            for _, part in pairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                    part.CanTouch = false -- Ngắt hoàn toàn tương tác hitbox với quái
+                end
+            end
+        end
+    end
+end)
+
+---------------------------------------------------------
+-- 7. SIÊU TỐC ĐỘ MAX 10,000 (KHÔNG BỊ ĐỊNH TRỆ)
 ---------------------------------------------------------
 local isSpeedEnabled = false
 local currentSpeed = 150
@@ -273,35 +315,6 @@ RunService.RenderStepped:Connect(function()
             if hum and hrp and hum.MoveDirection.Magnitude > 0 then
                 local moveDir = hum.MoveDirection
                 hrp.AssemblyLinearVelocity = Vector3.new(moveDir.X * currentSpeed, hrp.AssemblyLinearVelocity.Y, moveDir.Z * currentSpeed)
-            end
-        end
-    end
-end)
-
----------------------------------------------------------
--- 7. CHỨC NĂNG 3: ANTI-HIT (CHỐNG QUÁI ĐÁNH)
----------------------------------------------------------
-local isAntiHit = false
-
-antiHitBtn.MouseButton1Click:Connect(function()
-    isAntiHit = not isAntiHit
-    antiHitBtn.BackgroundColor3 = isAntiHit and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
-    antiHitBtn.Text = "Chống Quái Đánh: " .. (isAntiHit and "BẬT" or "TẮT")
-end)
-
-RunService.Stepped:Connect(function()
-    if isAntiHit then
-        local char = LocalPlayer.Character
-        if char then
-            local hum = char:FindFirstChildOfClass("Humanoid")
-            if hum then
-                hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-                hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-            end
-            for _, part in pairs(char:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
             end
         end
     end

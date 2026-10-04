@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
 -- Cleanup UI cũ
@@ -53,7 +54,7 @@ frameCorner.Parent = mainFrame
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(1, 0, 0, 40)
 titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-titleLabel.Text = "👑 STEAL AN EGG - ULTIMATE GOD 👑"
+titleLabel.Text = "👑 STEAL AN EGG - AUTO RETURN 👑"
 titleLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
 titleLabel.TextSize = 12
 titleLabel.Font = Enum.Font.SourceSansBold
@@ -92,10 +93,10 @@ local function createToggle(text, posY)
     return btn
 end
 
-local autoFlyBtn = createToggle("Lụm Trứng -> Bay & Bất Tử 100%", 50)
+local autoFlyBtn = createToggle("Lụm Trứng -> Bay Về Nhà (Speed 500)", 50)
 local speedToggleBtn = createToggle("Bật Siêu Tốc Độ (Speed Hack)", 95)
 
--- KHU VỰC NHẬP TỐC ĐỘ (MAX 10,000)
+-- KHU VỰC NHẬP TỐC ĐỘ (DEFAULT 500)
 local speedFrame = Instance.new("Frame")
 speedFrame.Size = UDim2.new(0, 250, 0, 40)
 speedFrame.Position = UDim2.new(0.5, -125, 0, 140)
@@ -109,7 +110,7 @@ speedCorner.Parent = speedFrame
 local speedLabel = Instance.new("TextLabel")
 speedLabel.Size = UDim2.new(0, 120, 1, 0)
 speedLabel.BackgroundTransparency = 1
-speedLabel.Text = "Nhập Speed (1-10k):"
+speedLabel.Text = "Tốc độ bay/chạy:"
 speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 speedLabel.TextSize = 11
 speedLabel.Font = Enum.Font.SourceSansBold
@@ -119,7 +120,7 @@ local speedBox = Instance.new("TextBox")
 speedBox.Size = UDim2.new(0, 120, 0, 28)
 speedBox.Position = UDim2.new(1, -125, 0.5, -14)
 speedBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-speedBox.Text = "150"
+speedBox.Text = "500"
 speedBox.TextColor3 = Color3.fromRGB(50, 255, 50)
 speedBox.TextSize = 13
 speedBox.Font = Enum.Font.SourceSansBold
@@ -129,7 +130,7 @@ local boxCorner = Instance.new("UICorner")
 boxCorner.CornerRadius = UDim.new(0, 6)
 boxCorner.Parent = speedBox
 
-local antiHitBtn = createToggle("Tắt Touch/Hitbox (Quái Không Chạm)", 188)
+local antiHitBtn = createToggle("Tắt Touch/Hitbox (Bất Tử Quái)", 188)
 
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, 0, 0, 30)
@@ -142,7 +143,7 @@ statusLabel.Font = Enum.Font.SourceSans
 statusLabel.Parent = mainFrame
 
 ---------------------------------------------------------
--- 4. NHẬN DIỆN MANG TRỨNG DÀNH RIÊNG STEAL AN EGG
+-- 4. NHẬN DIỆN MANG TRỨNG & BẠN BÈ / CĂN CỨ
 ---------------------------------------------------------
 local function isCarryingEggSpecial()
     local char = LocalPlayer.Character
@@ -173,23 +174,43 @@ local function isCarryingEggSpecial()
     return false
 end
 
+-- Tìm vị trí Căn cứ / Tổ trứng của người chơi (Map 1)
+local function getMyBasePosition()
+    local bases = Workspace:FindFirstChild("Bases") or Workspace:FindFirstChild("Plots") or Workspace:FindFirstChild("Nests")
+    if bases then
+        for _, base in pairs(bases:GetChildren()) do
+            local owner = base:FindFirstChild("Owner") or base:FindFirstChild("Player")
+            if (owner and owner.Value == LocalPlayer) or base.Name:find(LocalPlayer.Name) then
+                local eggDropZone = base:FindFirstChild("EggZone") or base:FindFirstChild("Deposit") or base:FindFirstChild("Spawn") or base:FindFirstChildOfClass("Part")
+                if eggDropZone then
+                    return eggDropZone.Position
+                end
+                return base:GetPivot().Position
+            end
+        end
+    end
+    
+    -- Trường hợp dự phòng nếu game đặt SpawnLocation tại nhà
+    if LocalPlayer.RespawnLocation then
+        return LocalPlayer.RespawnLocation.Position
+    end
+    
+    return Vector3.new(0, 10, 0) -- Vị trí trung tâm mặc định nếu không xác định được
+end
+
 ---------------------------------------------------------
--- 5. BAY KHÔNG CẦN SÀN & CHỐNG CHẠM TOUCH/HITBOX (TRUE AIR FLY)
+-- 5. LOGIC BAY TỰ ĐỘNG VỀ NHÀ & RỚT TRỨNG
 ---------------------------------------------------------
 local isAutoFly = false
 local isFlying = false
 local flyBodyVel = nil
-local flyBodyGiro = nil
-local targetHeight = 0
+local flyBodyGyro = nil
+local flyHeightOffset = 35 -- Độ cao bay an toàn
 
-local function startTrueFly()
+local function startFlyToHome()
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     local hrp = char.HumanoidRootPart
-
-    -- Bay thẳng lên độ cao 45 stud
-    targetHeight = hrp.Position.Y + 45
-    hrp.CFrame = CFrame.new(hrp.Position.X, targetHeight, hrp.Position.Z)
 
     if not flyBodyVel then
         flyBodyVel = Instance.new("BodyVelocity")
@@ -198,57 +219,72 @@ local function startTrueFly()
         flyBodyVel.Parent = hrp
     end
 
-    if not flyBodyGiro then
-        flyBodyGiro = Instance.new("BodyGyro")
-        flyBodyGiro.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
-        flyBodyGiro.P = 10000
-        flyBodyGiro.CFrame = hrp.CFrame
-        flyBodyGiro.Parent = hrp
+    if not flyBodyGyro then
+        flyBodyGyro = Instance.new("BodyGyro")
+        flyBodyGyro.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
+        flyBodyGyro.P = 10000
+        flyBodyGyro.CFrame = hrp.CFrame
+        flyBodyGyro.Parent = hrp
     end
 
     isFlying = true
-    statusLabel.Text = "🚀 ĐÃ BAY LÊN KHÔNG - BẤT TỬ CHỐNG ĐÁNH!"
+    statusLabel.Text = "🚀 ĐÃ NHẶT TRỨNG -> ĐANG BAY VỀ NHÀ!"
     statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
 end
 
-local function stopTrueFly()
+local function stopFly()
     if flyBodyVel then flyBodyVel:Destroy(); flyBodyVel = nil end
-    if flyBodyGiro then flyBodyGiro:Destroy(); flyBodyGiro = nil end
+    if flyBodyGyro then flyBodyGyro:Destroy(); flyBodyGyro = nil end
     isFlying = false
-    statusLabel.Text = "Trạng thái: Chưa có trứng"
+    statusLabel.Text = "Trạng thái: Đã về nhà / Đang chờ nhặt trứng..."
     statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 end
 
 autoFlyBtn.MouseButton1Click:Connect(function()
     isAutoFly = not isAutoFly
     autoFlyBtn.BackgroundColor3 = isAutoFly and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
-    autoFlyBtn.Text = "Lụm Trứng -> Bay & Bất Tử: " .. (isAutoFly and "BẬT" or "TẮT")
-    if not isAutoFly then stopTrueFly() end
+    autoFlyBtn.Text = "Lụm Trứng -> Bay Về Nhà: " .. (isAutoFly and "BẬT" or "TẮT")
+    if not isAutoFly then stopFly() end
 end)
 
 RunService.Heartbeat:Connect(function()
-    if isAutoFly then
-        local hasEgg = isCarryingEggSpecial()
-        if hasEgg and not isFlying then
-            startTrueFly()
-        elseif not hasEgg and isFlying then
-            stopTrueFly()
-        end
-    end
+    if not isAutoFly then return end
 
-    -- Khóa vị trí trục Y lơ lửng trên không trung khi di chuyển
-    if isFlying and flyBodyVel then
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            local hrp = char.HumanoidRootPart
-            local hum = char:FindFirstChildOfClass("Humanoid")
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = char.HumanoidRootPart
+    local hum = char:FindFirstChildOfClass("Humanoid")
+
+    local hasEgg = isCarryingEggSpecial()
+
+    if hasEgg then
+        if not isFlying then
+            startFlyToHome()
+        end
+
+        local basePos = getMyBasePosition()
+        local targetFlyPos = Vector3.new(basePos.X, basePos.Y + flyHeightOffset, basePos.Z)
+        local flatDistance = (Vector3.new(hrp.Position.X, 0, hrp.Position.Z) - Vector3.new(basePos.X, 0, basePos.Z)).Magnitude
+        local speed = tonumber(speedBox.Text) or 500
+
+        -- Tiến gần đến nhà
+        if flatDistance > 12 then
+            local moveDir = (targetFlyPos - hrp.Position).Unit
+            flyBodyVel.Velocity = moveDir * speed
+            flyBodyGyro.CFrame = CFrame.new(hrp.Position, targetFlyPos)
+        else
+            -- Đã sát nhà -> Từ từ hạ độ cao xuống để thả trứng
+            statusLabel.Text = "🪂 ĐÃ VỀ TỚI NHÀ -> HẠ CÁNH THẢ TRỨNG..."
+            statusLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
             
-            -- Giữ nhân vật luôn lơ lửng đúng độ cao targetHeight
-            hrp.CFrame = CFrame.new(hrp.Position.X, targetHeight, hrp.Position.Z) * hrp.CFrame.Rotation
-            
-            if hum and hum.MoveDirection.Magnitude == 0 then
-                flyBodyVel.Velocity = Vector3.zero
-            end
+            local dropTarget = Vector3.new(basePos.X, basePos.Y + 2, basePos.Z)
+            local dropDir = (dropTarget - hrp.Position).Unit
+            flyBodyVel.Velocity = dropDir * 50
+            flyBodyGyro.CFrame = CFrame.new(hrp.Position, dropTarget)
+        end
+    else
+        if isFlying then
+            stopFly()
         end
     end
 end)
@@ -264,7 +300,6 @@ antiHitBtn.MouseButton1Click:Connect(function()
     antiHitBtn.Text = "Tắt Touch/Hitbox: " .. (isAntiHit and "BẬT" or "TẮT")
 end)
 
--- Ép liên tục mọi Part trong nhân vật ngắt nhận dạng Touch
 RunService.Stepped:Connect(function()
     if isAntiHit or isFlying then
         local char = LocalPlayer.Character
@@ -277,7 +312,7 @@ RunService.Stepped:Connect(function()
             for _, part in pairs(char:GetDescendants()) do
                 if part:IsA("BasePart") then
                     part.CanCollide = false
-                    part.CanTouch = false -- Ngắt hoàn toàn tương tác hitbox với quái
+                    part.CanTouch = false
                 end
             end
         end
@@ -285,18 +320,16 @@ RunService.Stepped:Connect(function()
 end)
 
 ---------------------------------------------------------
--- 7. SIÊU TỐC ĐỘ MAX 10,000 (KHÔNG BỊ ĐỊNH TRỆ)
+-- 7. SIÊU TỐC ĐỘ DI CHUYỂN BÌNH THƯỜNG
 ---------------------------------------------------------
 local isSpeedEnabled = false
-local currentSpeed = 150
 
 speedBox.FocusLost:Connect(function()
     local num = tonumber(speedBox.Text)
-    if num then
-        currentSpeed = math.clamp(num, 1, 10000)
-        speedBox.Text = tostring(currentSpeed)
+    if not num then
+        speedBox.Text = "500"
     else
-        speedBox.Text = tostring(currentSpeed)
+        speedBox.Text = tostring(math.clamp(num, 1, 10000))
     end
 end)
 
@@ -307,11 +340,13 @@ speedToggleBtn.MouseButton1Click:Connect(function()
 end)
 
 RunService.RenderStepped:Connect(function()
-    if isSpeedEnabled then
+    if isSpeedEnabled and not isFlying then
         local char = LocalPlayer.Character
         if char then
             local hum = char:FindFirstChildOfClass("Humanoid")
             local hrp = char:FindFirstChild("HumanoidRootPart")
+            local currentSpeed = tonumber(speedBox.Text) or 500
+            
             if hum and hrp and hum.MoveDirection.Magnitude > 0 then
                 local moveDir = hum.MoveDirection
                 hrp.AssemblyLinearVelocity = Vector3.new(moveDir.X * currentSpeed, hrp.AssemblyLinearVelocity.Y, moveDir.Z * currentSpeed)

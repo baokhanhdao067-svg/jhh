@@ -2,21 +2,21 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- Xóa UI cũ nếu đã tồn tại
+-- Cleanup UI cũ
 local CoreGui = game:GetService("CoreGui")
 local parentGui = CoreGui:FindFirstChild("RobloxGui") or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
-if parentGui:FindFirstChild("StealEggProHub") then
-    parentGui.StealEggProHub:Destroy()
+if parentGui:FindFirstChild("StealEggGodHub") then
+    parentGui.StealEggGodHub:Destroy()
 end
 
--- Tạo UI
+-- ScreenGui Main
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "StealEggProHub"
+screenGui.Name = "StealEggGodHub"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = parentGui
 
 ---------------------------------------------------------
--- 1. NÚT MỞ / TẮT MENU
+-- 1. NÚT NỔI TOGGLE MENU
 ---------------------------------------------------------
 local toggleMenuBtn = Instance.new("TextButton")
 toggleMenuBtn.Name = "ToggleMenuBtn"
@@ -38,9 +38,9 @@ btnCorner.Parent = toggleMenuBtn
 ---------------------------------------------------------
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 270, 0, 260)
-mainFrame.Position = UDim2.new(0.5, -135, 0.3, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.Size = UDim2.new(0, 280, 0, 310)
+mainFrame.Position = UDim2.new(0.5, -140, 0.25, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Draggable = true
@@ -53,7 +53,7 @@ frameCorner.Parent = mainFrame
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(1, 0, 0, 40)
 titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-titleLabel.Text = "🥚 STEAL AN EGG - AIRWALK HUB 🥚"
+titleLabel.Text = "⚡ STEAL AN EGG - GOD HUB 10K ⚡"
 titleLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
 titleLabel.TextSize = 13
 titleLabel.Font = Enum.Font.SourceSansBold
@@ -72,16 +72,16 @@ toggleMenuBtn.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------
--- 3. HÀM TẠO TOGGLE BUTTON
+-- 3. CÁC NÚT TÍNH NĂNG
 ---------------------------------------------------------
 local function createToggle(text, posY)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 240, 0, 40)
-    btn.Position = UDim2.new(0.5, -120, 0, posY)
-    btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40) -- Mặc định TẮT
+    btn.Size = UDim2.new(0, 250, 0, 38)
+    btn.Position = UDim2.new(0.5, -125, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
     btn.Text = text .. ": TẮT"
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 13
+    btn.TextSize = 12
     btn.Font = Enum.Font.SourceSansBold
     btn.Parent = mainFrame
 
@@ -92,22 +92,57 @@ local function createToggle(text, posY)
     return btn
 end
 
-local autoFlyBtn = createToggle("Trứng -> Bay & Đi Trên Không", 50)
-local speedBoostBtn = createToggle("Siêu Tốc Độ (Không Lag Slow)", 105)
-local antiHitBtn = createToggle("Chống Quái Đánh / Bất Tử", 160)
+local autoFlyBtn = createToggle("Lụm Trứng -> Bay Vút Lên Không", 50)
+local speedToggleBtn = createToggle("Bật Siêu Tốc Độ (Extreme Speed)", 95)
+
+-- KHU VỰC Ô NHẬP TỐC ĐỘ (SPEED INPUT MAX 10000)
+local speedFrame = Instance.new("Frame")
+speedFrame.Size = UDim2.new(0, 250, 0, 40)
+speedFrame.Position = UDim2.new(0.5, -125, 0, 140)
+speedFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+speedFrame.Parent = mainFrame
+
+local speedCorner = Instance.new("UICorner")
+speedCorner.CornerRadius = UDim.new(0, 8)
+speedCorner.Parent = speedFrame
+
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Size = UDim2.new(0, 120, 1, 0)
+speedLabel.BackgroundTransparency = 1
+speedLabel.Text = "Nhập Speed (1-10k):"
+speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedLabel.TextSize = 11
+speedLabel.Font = Enum.Font.SourceSansBold
+speedLabel.Parent = speedFrame
+
+local speedBox = Instance.new("TextBox")
+speedBox.Size = UDim2.new(0, 120, 0, 28)
+speedBox.Position = UDim2.new(1, -125, 0.5, -14)
+speedBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+speedBox.Text = "100"
+speedBox.TextColor3 = Color3.fromRGB(50, 255, 50)
+speedBox.TextSize = 13
+speedBox.Font = Enum.Font.SourceSansBold
+speedBox.Parent = speedFrame
+
+local boxCorner = Instance.new("UICorner")
+boxCorner.CornerRadius = UDim.new(0, 6)
+boxCorner.Parent = speedBox
+
+local antiHitBtn = createToggle("Chống Quái Đánh / Bất Tử", 188)
 
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, 0, 0, 30)
-statusLabel.Position = UDim2.new(0, 0, 0, 215)
+statusLabel.Position = UDim2.new(0, 0, 0, 270)
 statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "Trạng thái: Sẵn sàng cướp trứng"
+statusLabel.Text = "Trạng thái: Đã sẵn sàng bá chủ!"
 statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-statusLabel.TextSize = 12
+statusLabel.TextSize = 11
 statusLabel.Font = Enum.Font.SourceSans
 statusLabel.Parent = mainFrame
 
 ---------------------------------------------------------
--- 4. LOGIC NHẬN DIỆN TRỨNG
+-- 4. LOGIC GIỮ TRỨNG
 ---------------------------------------------------------
 local function isHoldingEgg()
     local char = LocalPlayer.Character
@@ -115,83 +150,73 @@ local function isHoldingEgg()
     
     if backpack then
         for _, item in pairs(backpack:GetChildren()) do
-            if item.Name:lower():find("egg") or item.Name:lower():find("trung") then
-                return true
-            end
+            if item.Name:lower():find("egg") or item.Name:lower():find("trung") then return true end
         end
     end
     
     if char then
         for _, child in pairs(char:GetChildren()) do
-            if child:IsA("Tool") or child:IsA("Model") or child:IsA("Part") or child:IsA("MeshPart") then
-                local n = child.Name:lower()
-                if n:find("egg") or n:find("trung") or child:FindFirstChild("Egg") then
-                    return true
-                end
-            end
+            local n = child.Name:lower()
+            if n:find("egg") or n:find("trung") or child:FindFirstChild("Egg") then return true end
         end
     end
     return false
 end
 
 ---------------------------------------------------------
--- 5. CHỨC NĂNG 1: BAY LÊN ĐỘ CAO CỐ ĐỊNH & ĐI TRÊN KHÔNG
+-- 5. CHỨC NĂNG 1: BAY VÚT LÊN KHI CÓ TRỨNG + ĐI TRÊN KHÔNG
 ---------------------------------------------------------
 local isAutoFly = false
 local isAirWalking = false
 local airPlatform = nil
 
-local function enableAirWalk()
+local function launchAndAirWalk()
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     local hrp = char.HumanoidRootPart
 
-    -- Dịch chuyển nhân vật lên thẳng 35 stud trên không
-    hrp.CFrame = hrp.CFrame + Vector3.new(0, 35, 0)
+    -- Bẩy lực đẩy nhân vật vút lên trời ngay lập tức
+    hrp.CFrame = hrp.CFrame * CFrame.new(0, 40, 0)
 
-    -- Tạo sàn tàng hình để đi bộ trên không mượt mà
+    -- Sàn tàng hình đi trên không
     if not airPlatform or not airPlatform.Parent then
         airPlatform = Instance.new("Part")
-        airPlatform.Size = Vector3.new(15, 1, 15)
-        airPlatform.Transparency = 1 -- Tàng hình
+        airPlatform.Size = Vector3.new(20, 1, 20)
+        airPlatform.Transparency = 1
         airPlatform.Anchored = true
         airPlatform.CanCollide = true
         airPlatform.Parent = workspace
     end
 
     isAirWalking = true
-    statusLabel.Text = "🚀 ĐÃ BAY LÊN KHÔNG TẬN -> ĐANG ĐI TRÊN KHÔNG!"
+    statusLabel.Text = "🚀 Đã phát hiện trứng -> Bay vút & đi trên không!"
     statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
 end
 
-local function disableAirWalk()
+local function stopAirWalk()
     if airPlatform then
         airPlatform:Destroy()
         airPlatform = nil
     end
     isAirWalking = false
-    statusLabel.Text = "Trạng thái: Chưa nhặt trứng"
+    statusLabel.Text = "Trạng thái: Chưa có trứng"
     statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 end
 
 autoFlyBtn.MouseButton1Click:Connect(function()
     isAutoFly = not isAutoFly
     autoFlyBtn.BackgroundColor3 = isAutoFly and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
-    autoFlyBtn.Text = "Trứng -> Bay & Đi Trên Không: " .. (isAutoFly and "BẬT" or "TẮT")
-    
-    if not isAutoFly then
-        disableAirWalk()
-    end
+    autoFlyBtn.Text = "Lụm Trứng -> Bay Vút Lên Không: " .. (isAutoFly and "BẬT" or "TẮT")
+    if not isAutoFly then stopAirWalk() end
 end)
 
--- Giữ sàn tàng hình ngay dưới chân khi đi trên không
 RunService.Heartbeat:Connect(function()
     if isAutoFly then
         local hasEgg = isHoldingEgg()
         if hasEgg and not isAirWalking then
-            enableAirWalk()
+            launchAndAirWalk()
         elseif not hasEgg and isAirWalking then
-            disableAirWalk()
+            stopAirWalk()
         end
     end
 
@@ -205,33 +230,44 @@ RunService.Heartbeat:Connect(function()
 end)
 
 ---------------------------------------------------------
--- 6. CHỨC NĂNG 2: SIÊU TỐC ĐỘ (ÉP TỐC DÙNG CFRAME CHỐNG LAG)
+-- 6. CHỨC NĂNG 2: SIÊU TỐC ĐỘ MAX 10,000 (TỰ NHẬP SỐ)
 ---------------------------------------------------------
-local isSpeedBoost = false
-local speedValue = 1.8 -- Tốc độ di chuyển tùy chỉnh mượt mà
+local isSpeedEnabled = false
+local currentSpeed = 100
 
-speedBoostBtn.MouseButton1Click:Connect(function()
-    isSpeedBoost = not isSpeedBoost
-    speedBoostBtn.BackgroundColor3 = isSpeedBoost and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
-    speedBoostBtn.Text = "Siêu Tốc Độ: " .. (isSpeedBoost and "BẬT" or "TẮT")
+speedBox.FocusLost:Connect(function()
+    local num = tonumber(speedBox.Text)
+    if num then
+        currentSpeed = math.clamp(num, 1, 10000)
+        speedBox.Text = tostring(currentSpeed)
+    else
+        speedBox.Text = tostring(currentSpeed)
+    end
 end)
 
+speedToggleBtn.MouseButton1Click:Connect(function()
+    isSpeedEnabled = not isSpeedEnabled
+    speedToggleBtn.BackgroundColor3 = isSpeedEnabled and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
+    speedToggleBtn.Text = "Bật Siêu Tốc Độ: " .. (isSpeedEnabled and "BẬT" or "TẮT")
+end)
+
+-- Can thiệp trực tiếp Vận Tốc Vật Lý (Bỏ qua mọi hiệu ứng đi chậm)
 RunService.RenderStepped:Connect(function()
-    if isSpeedBoost then
+    if isSpeedEnabled then
         local char = LocalPlayer.Character
         if char then
             local hum = char:FindFirstChildOfClass("Humanoid")
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if hum and hrp and hum.MoveDirection.Magnitude > 0 then
-                -- Đẩy nhân vật di chuyển theo hướng nhấn phím/joystick bằng CFrame
-                hrp.CFrame = hrp.CFrame + (hum.MoveDirection * speedValue)
+                local moveDir = hum.MoveDirection
+                hrp.AssemblyLinearVelocity = Vector3.new(moveDir.X * currentSpeed, hrp.AssemblyLinearVelocity.Y, moveDir.Z * currentSpeed)
             end
         end
     end
 end)
 
 ---------------------------------------------------------
--- 7. CHỨC NĂNG 3: CHỐNG QUÁI ĐÁNH (ANTI-HIT)
+-- 7. CHỨC NĂNG 3: ANTI-HIT (BẤT TỬ CHỐNG ĐÁNH)
 ---------------------------------------------------------
 local isAntiHit = false
 

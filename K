@@ -1,29 +1,28 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
--- Xóa UI cũ nếu tồn tại
+-- Xóa UI cũ nếu có
 local CoreGui = game:GetService("CoreGui")
 local parentGui = CoreGui:FindFirstChild("RobloxGui") or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
-if parentGui:FindFirstChild("StealEggV2Hub") then
-    parentGui.StealEggV2Hub:Destroy()
+if parentGui:FindFirstChild("StealEggMasterHub") then
+    parentGui.StealEggMasterHub:Destroy()
 end
 
--- ScreenGui Main
+-- GUI chính
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "StealEggV2Hub"
+screenGui.Name = "StealEggMasterHub"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = parentGui
 
 ---------------------------------------------------------
--- 1. NÚT MỞ/ẨN MENU (TẬN CÙNG GÓC TRÊN BÊN TRÁI)
+-- 1. NÚT NỔI BẬT/TẮT ẨN HIỆN MENU
 ---------------------------------------------------------
 local toggleMenuBtn = Instance.new("TextButton")
 toggleMenuBtn.Name = "ToggleMenuBtn"
 toggleMenuBtn.Size = UDim2.new(0, 80, 0, 35)
-toggleMenuBtn.Position = UDim2.new(0, 10, 0, 10)
-toggleMenuBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+toggleMenuBtn.Position = UDim2.new(0, 15, 0, 15)
+toggleMenuBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 toggleMenuBtn.Text = "MENU [ON]"
 toggleMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleMenuBtn.TextSize = 13
@@ -35,13 +34,13 @@ btnCorner.CornerRadius = UDim.new(0, 8)
 btnCorner.Parent = toggleMenuBtn
 
 ---------------------------------------------------------
--- 2. KHUNG MENU CHÍNH (MAIN FRAME)
+-- 2. KHUNG MENU CHÍNH
 ---------------------------------------------------------
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 250, 0, 210)
-mainFrame.Position = UDim2.new(0.5, -125, 0.35, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.Size = UDim2.new(0, 260, 0, 260)
+mainFrame.Position = UDim2.new(0.5, -130, 0.3, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Draggable = true
@@ -51,11 +50,11 @@ local frameCorner = Instance.new("UICorner")
 frameCorner.CornerRadius = UDim.new(0, 10)
 frameCorner.Parent = mainFrame
 
--- Title
+-- Tiêu đề
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, 0, 0, 35)
-titleLabel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-titleLabel.Text = "STEAL AN EGG - PRO HUB V2"
+titleLabel.Size = UDim2.new(1, 0, 0, 38)
+titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+titleLabel.Text = "👑 STEAL AN EGG - GOD HUB 👑"
 titleLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
 titleLabel.TextSize = 14
 titleLabel.Font = Enum.Font.SourceSansBold
@@ -65,23 +64,23 @@ local titleCorner = Instance.new("UICorner")
 titleCorner.CornerRadius = UDim.new(0, 10)
 titleCorner.Parent = titleLabel
 
--- Logic Ẩn/Hiện Menu khi bấm nút
+-- Logic Ẩn / Hiện Menu
 local menuVisible = true
 toggleMenuBtn.MouseButton1Click:Connect(function()
     menuVisible = not menuVisible
     mainFrame.Visible = menuVisible
     toggleMenuBtn.Text = menuVisible and "MENU [ON]" or "MENU [OFF]"
-    toggleMenuBtn.BackgroundColor3 = menuVisible and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(100, 100, 100)
+    toggleMenuBtn.BackgroundColor3 = menuVisible and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(100, 100, 100)
 end)
 
 ---------------------------------------------------------
--- 3. CÁC NÚT BẬT/TẮT TÍNH NĂNG (TOGGLES)
+-- 3. HÀM TẠO NÚT BẬT/TẮT (TOGGLE BUTTON)
 ---------------------------------------------------------
 local function createToggle(text, posY)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 210, 0, 40)
-    btn.Position = UDim2.new(0.5, -105, 0, posY)
-    btn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Đỏ (Tắt)
+    btn.Size = UDim2.new(0, 230, 0, 40)
+    btn.Position = UDim2.new(0.5, -115, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40) -- Đỏ (TẮT)
     btn.Text = text .. ": TẮT"
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.TextSize = 13
@@ -89,35 +88,36 @@ local function createToggle(text, posY)
     btn.Parent = mainFrame
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
+    corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = btn
 
     return btn
 end
 
-local antiHitBtn = createToggle("Chống Quái Đánh & Lag Speed", 50)
-local autoFlyBtn = createToggle("Tự Bay Lên Khi Lụm Trứng", 100)
+local antiHitBtn = createToggle("Chống Quái Đánh (Anti-Hit)", 50)
+local autoFlyBtn = createToggle("Lụm Trứng Tự Bay Lên", 100)
+local speedBoostBtn = createToggle("Tăng Tốc Chạy Bá Đạo", 150)
 
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, 0, 0, 30)
-statusLabel.Position = UDim2.new(0, 0, 0, 155)
+statusLabel.Position = UDim2.new(0, 0, 0, 210)
 statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "Trạng thái: Sẵn sàng"
+statusLabel.Text = "Trạng thái: Sẵn sàng cướp trứng!"
 statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 statusLabel.TextSize = 12
 statusLabel.Font = Enum.Font.SourceSans
 statusLabel.Parent = mainFrame
 
 ---------------------------------------------------------
--- 4. LOGIC CHỐNG QUÁI ĐÁNH & GIỮ TỐC ĐỘ BÌNH THƯỜNG
+-- 4. CHỨC NĂNG 1: ANTI-HIT (CHỐNG QUÁI ĐÁNH & CHỐNG RAGDOLL)
 ---------------------------------------------------------
 local isAntiHit = false
 local antiHitConn = nil
 
 antiHitBtn.MouseButton1Click:Connect(function()
     isAntiHit = not isAntiHit
-    antiHitBtn.BackgroundColor3 = isAntiHit and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
-    antiHitBtn.Text = "Chống Quái Đánh & Lag Speed: " .. (isAntiHit and "BẬT" or "TẮT")
+    antiHitBtn.BackgroundColor3 = isAntiHit and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
+    antiHitBtn.Text = "Chống Quái Đánh: " .. (isAntiHit and "BẬT" or "TẮT")
 
     if isAntiHit then
         antiHitConn = RunService.Stepped:Connect(function()
@@ -127,7 +127,6 @@ antiHitBtn.MouseButton1Click:Connect(function()
                 if hum then
                     hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
                     hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-                    if hum.WalkSpeed < 16 then hum.WalkSpeed = 16 end
                 end
                 for _, part in pairs(char:GetChildren()) do
                     if part:IsA("BasePart") then
@@ -146,56 +145,62 @@ antiHitBtn.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------
--- 5. LOGIC TỰ ĐỘNG BAY KHI LỤM TRỨNG (MỚI TRIỆT ĐỂ)
+-- 5. CHỨC NĂNG 2: AUTO FLY KHI CÓ TRỨNG (QUÉT SÂU THỰC TẾ)
 ---------------------------------------------------------
 local isAutoFly = false
 local isFlying = false
-local bodyVel = nil
+local bodyPos = nil
 
-local function flyUp()
+local function startFlyUp()
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     
-    if not bodyVel or not bodyVel.Parent then
-        bodyVel = Instance.new("BodyVelocity")
-        bodyVel.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-        bodyVel.Velocity = Vector3.new(0, 45, 0) -- Tốc độ bay lên trời
-        bodyVel.Parent = char.HumanoidRootPart
+    if not bodyPos or not bodyPos.Parent then
+        bodyPos = Instance.new("BodyPosition")
+        bodyPos.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+        bodyPos.D = 1200
+        bodyPos.P = 10000
+        -- Nâng nhân vật lên cao 35 stud so với vị trí hiện tại
+        bodyPos.Position = char.HumanoidRootPart.Position + Vector3.new(0, 35, 0)
+        bodyPos.Parent = char.HumanoidRootPart
     end
     isFlying = true
-    statusLabel.Text = "Đang Bay Cực Cao (Đã Nhặt Trứng)!"
+    statusLabel.Text = "🚀 ĐÃ PHÁT HIỆN TRỨNG -> ĐANG BAY LÊN!"
     statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
 end
 
 local function stopFly()
-    if bodyVel then
-        bodyVel:Destroy()
-        bodyVel = nil
+    if bodyPos then
+        bodyPos:Destroy()
+        bodyPos = nil
     end
     isFlying = false
-    statusLabel.Text = "Trạng thái: Chưa có trứng"
+    statusLabel.Text = "Trạng thái: Chưa nhặt trứng"
     statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 end
 
--- Nhận diện vật phẩm Trứng chính xác trong Steal an Egg
-local function checkHasEgg()
+-- Hàm kiểm tra xem nhân vật/balo có đang giữ trứng hay không
+local function isHoldingEgg()
     local char = LocalPlayer.Character
     local backpack = LocalPlayer:FindFirstChild("Backpack")
     
-    -- Lặp qua tất cả vật phẩm đang cầm hoặc trong kho
-    local items = {}
-    if char then
-        for _, v in pairs(char:GetChildren()) do table.insert(items, v) end
-    end
+    -- Quét trong balo
     if backpack then
-        for _, v in pairs(backpack:GetChildren()) do table.insert(items, v) end
-    end
-
-    for _, item in pairs(items) do
-        if item:IsA("Tool") or item:IsA("Model") then
-            local n = item.Name:lower()
-            if n:find("egg") or n:find("trung") or item:FindFirstChild("Egg") or item:FindFirstChild("Handle") then
+        for _, item in pairs(backpack:GetChildren()) do
+            if item.Name:lower():find("egg") or item.Name:lower():find("trung") then
                 return true
+            end
+        end
+    end
+    
+    -- Quét trực tiếp trên người (bao gồm Tool, Model hoặc Part được Weld vào người)
+    if char then
+        for _, child in pairs(char:GetChildren()) do
+            if child:IsA("Tool") or child:IsA("Model") or child:IsA("Part") or child:IsA("MeshPart") then
+                local n = child.Name:lower()
+                if n:find("egg") or n:find("trung") or child:FindFirstChild("Egg") then
+                    return true
+                end
             end
         end
     end
@@ -204,22 +209,46 @@ end
 
 autoFlyBtn.MouseButton1Click:Connect(function()
     isAutoFly = not isAutoFly
-    autoFlyBtn.BackgroundColor3 = isAutoFly and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
-    autoFlyBtn.Text = "Tự Bay Lên Khi Lụm Trứng: " .. (isAutoFly and "BẬT" or "TẮT")
+    autoFlyBtn.BackgroundColor3 = isAutoFly and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
+    autoFlyBtn.Text = "Lụm Trứng Tự Bay Lên: " .. (isAutoFly and "BẬT" or "TẮT")
     
     if not isAutoFly then
         stopFly()
     end
 end)
 
--- Vòng lặp liên tục quét trạng thái nhặt trứng
 RunService.Heartbeat:Connect(function()
     if isAutoFly then
-        local hasEgg = checkHasEgg()
+        local hasEgg = isHoldingEgg()
         if hasEgg and not isFlying then
-            flyUp()
+            startFlyUp()
         elseif not hasEgg and isFlying then
             stopFly()
+        end
+    end
+end)
+
+---------------------------------------------------------
+-- 6. CHỨC NĂNG 3: TĂNG TỐC CHẠY (SPEED BOOST)
+---------------------------------------------------------
+local isSpeedBoost = false
+
+speedBoostBtn.MouseButton1Click:Connect(function()
+    isSpeedBoost = not isSpeedBoost
+    speedBoostBtn.BackgroundColor3 = isSpeedBoost and Color3.fromRGB(40, 180, 40) or Color3.fromRGB(180, 40, 40)
+    speedBoostBtn.Text = "Tăng Tốc Chạy Bá Đạo: " .. (isSpeedBoost and "BẬT" or "TẮT")
+end)
+
+RunService.RenderStepped:Connect(function()
+    local char = LocalPlayer.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then
+            if isSpeedBoost then
+                hum.WalkSpeed = 35 -- Tốc độ chạy nhanh vượt trội
+            elseif not isAntiHit and hum.WalkSpeed > 16 then
+                hum.WalkSpeed = 16
+            end
         end
     end
 end)

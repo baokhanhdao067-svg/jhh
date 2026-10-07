@@ -1,3 +1,20 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Kiểm tra và chọn nơi lưu GUI tương thích với Executor
+local ParentGui
+local successGui, _ = pcall(function()
+    ParentGui = game:GetService("CoreGui")
+end)
+if not successGui or not ParentGui then
+    ParentGui = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+-- Xóa GUI cũ nếu đã tồn tại trước đó
+if ParentGui:FindFirstChild("KHUB_StealAnEgg") then
+    ParentGui:FindFirstChild("KHUB_StealAnEgg"):Destroy()
+end
+
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
@@ -19,7 +36,7 @@ local UIStroke = Instance.new("UIStroke")
 
 -- Khởi tạo ScreenGui
 ScreenGui.Name = "KHUB_StealAnEgg"
-ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.Parent = ParentGui
 ScreenGui.ResetOnSpawn = false
 
 -- Nút Bật/Tắt Menu (Toggle Button - Chữ K HUB, viền RGB 7 màu)
@@ -52,16 +69,18 @@ MainFrame.ClipsDescendants = true
 UICorner.CornerRadius = UDim.new(0, 12)
 UICorner.Parent = MainFrame
 
--- Hình nền Zoro bên trong Menu
-local BackgroundImage = Instance.new("ImageLabel")
-BackgroundImage.Name = "BackgroundImage"
-BackgroundImage.Parent = MainFrame
-BackgroundImage.BackgroundTransparency = 1.000
-BackgroundImage.Position = UDim2.new(0, 0, 0, 0)
-BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
-BackgroundImage.Image = "http://www.roblox.com/asset/?id=13511142512"
-BackgroundImage.ImageTransparency = 0.3
-BackgroundImage.ScaleType = Enum.ScaleType.Crop
+-- Hình nền Zoro (An toàn)
+pcall(function()
+    local BackgroundImage = Instance.new("ImageLabel")
+    BackgroundImage.Name = "BackgroundImage"
+    BackgroundImage.Parent = MainFrame
+    BackgroundImage.BackgroundTransparency = 1.000
+    BackgroundImage.Position = UDim2.new(0, 0, 0, 0)
+    BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
+    BackgroundImage.Image = "http://www.roblox.com/asset/?id=13511142512"
+    BackgroundImage.ImageTransparency = 0.3
+    BackgroundImage.ScaleType = Enum.ScaleType.Crop
+end)
 
 -- Viền Cầu Vồng 7 Màu Nhấp Nháy
 UIStroke.Parent = MainFrame
@@ -86,24 +105,4 @@ Title.Name = "Title"
 Title.Parent = MainFrame
 Title.BackgroundTransparency = 1.000
 Title.Position = UDim2.new(0, 0, 0, 5)
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "✨ K HUB - GAME STEAL AN EGG ✨"
-Title.TextSize = 15.00
-
--- Thanh Chuyển Tab
-TabContainer.Name = "TabContainer"
-TabContainer.Parent = MainFrame
-TabContainer.BackgroundTransparency = 1.000
-TabContainer.Position = UDim2.new(0.02, 0, 0.12, 0)
-TabContainer.Size = UDim2.new(0.96, 0, 0, 32)
-
-NoKeyTabBtn.Name = "NoKeyTabBtn"
-NoKeyTabBtn.Parent = TabContainer
-NoKeyTabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-NoKeyTabBtn.BackgroundTransparency = 0.3
-NoKeyTabBtn.Position = UDim2.new(0, 0, 0, 0)
-NoKeyTabBtn.Size = UDim2.new(0.32, 0, 1, 0)
-NoKeyTabBtn.Font = Enum.Font.GothamBold
-NoKeyTabBtn.Text =
-
+Title.Size = UDim2.new(1, 

@@ -1,108 +1,218 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Kiểm tra và chọn nơi lưu GUI tương thích với Executor
-local ParentGui
-local successGui, _ = pcall(function()
-    ParentGui = game:GetService("CoreGui")
-end)
-if not successGui or not ParentGui then
-    ParentGui = LocalPlayer:WaitForChild("PlayerGui")
-end
+-- Chọn nơi chứa Gui an toàn nhất
+local Parent = game:GetService("CoreGui")
+local success = pcall(function() local a = Parent.Name end)
+if not success then Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
--- Xóa GUI cũ nếu đã tồn tại trước đó
-if ParentGui:FindFirstChild("KHUB_StealAnEgg") then
-    ParentGui:FindFirstChild("KHUB_StealAnEgg"):Destroy()
+if Parent:FindFirstChild("KHUB_Main") then
+    Parent:FindFirstChild("KHUB_Main"):Destroy()
 end
 
 local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local ToggleBtn = Instance.new("TextButton")
-local TabContainer = Instance.new("Frame")
-
--- Các Nút Tab
-local NoKeyTabBtn = Instance.new("TextButton")
-local KeyTabBtn = Instance.new("TextButton")
-local ServerHopTabBtn = Instance.new("TextButton")
-
--- Khung Nội Dung Các Tab
-local NoKeyScroll = Instance.new("ScrollingFrame")
-local KeyScroll = Instance.new("ScrollingFrame")
-local ServerHopFrame = Instance.new("Frame")
-
-local UICorner = Instance.new("UICorner")
-local UIStroke = Instance.new("UIStroke")
-
--- Khởi tạo ScreenGui
-ScreenGui.Name = "KHUB_StealAnEgg"
-ScreenGui.Parent = ParentGui
+ScreenGui.Name = "KHUB_Main"
+ScreenGui.Parent = Parent
 ScreenGui.ResetOnSpawn = false
 
--- Nút Bật/Tắt Menu (Toggle Button - Chữ K HUB, viền RGB 7 màu)
-ToggleBtn.Name = "ToggleBtn"
+-- Nút Bật/Tắt Menu (Góc trên bên trái)
+local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Parent = ScreenGui
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-ToggleBtn.Position = UDim2.new(0.02, 0, 0.15, 0)
-ToggleBtn.Size = UDim2.new(0, 110, 0, 35)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleBtn.Position = UDim2.new(0.02, 0, 0.1, 0)
+ToggleBtn.Size = UDim2.new(0, 100, 0, 35)
 ToggleBtn.Font = Enum.Font.SourceSansBold
 ToggleBtn.Text = "K HUB"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleBtn.TextSize = 16.00
+ToggleBtn.TextSize = 16
 ToggleBtn.Draggable = true
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 8)
 
-local ToggleStroke = Instance.new("UIStroke")
-ToggleStroke.Parent = ToggleBtn
-ToggleStroke.Thickness = 2
-ToggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
 -- Khung Menu Chính
-MainFrame.Name = "MainFrame"
+local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 440, 0, 330)
+MainFrame.Size = UDim2.new(0, 420, 0, 320)
 MainFrame.Active = true
 MainFrame.Draggable = true
-MainFrame.ClipsDescendants = true
-UICorner.CornerRadius = UDim.new(0, 12)
-UICorner.Parent = MainFrame
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
--- Hình nền Zoro (An toàn)
-pcall(function()
-    local BackgroundImage = Instance.new("ImageLabel")
-    BackgroundImage.Name = "BackgroundImage"
-    BackgroundImage.Parent = MainFrame
-    BackgroundImage.BackgroundTransparency = 1.000
-    BackgroundImage.Position = UDim2.new(0, 0, 0, 0)
-    BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
-    BackgroundImage.Image = "http://www.roblox.com/asset/?id=13511142512"
-    BackgroundImage.ImageTransparency = 0.3
-    BackgroundImage.ScaleType = Enum.ScaleType.Crop
-end)
+local Stroke = Instance.new("UIStroke")
+Stroke.Parent = MainFrame
+Stroke.Thickness = 2
 
--- Viền Cầu Vồng 7 Màu Nhấp Nháy
-UIStroke.Parent = MainFrame
-UIStroke.Thickness = 3
-UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
+-- Hiệu ứng RGB Viền
 task.spawn(function()
     local hue = 0
-    while task.wait(0.02) do
+    while task.wait(0.03) do
         hue = (hue + 0.01) % 1
-        local flashVal = 0.7 + 0.3 * math.sin(tick() * 10)
-        local rainbowColor = Color3.fromHSV(hue, 0.9, flashVal)
-        
-        UIStroke.Color = rainbowColor
-        ToggleStroke.Color = rainbowColor
-        Title.TextColor3 = rainbowColor
+        Stroke.Color = Color3.fromHSV(hue, 0.8, 1)
     end
 end)
 
--- Tiêu đề Menu
-Title.Name = "Title"
+-- Tiêu đề
+local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
-Title.BackgroundTransparency = 1.000
+Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 0, 0, 5)
-Title.Size = UDim2.new(1, 
+Title.Size = UDim2.new(1, 0, 0, 25)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "K HUB - STEAL AN EGG"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 14
+
+-- Các Tab
+local TabContainer = Instance.new("Frame")
+TabContainer.Parent = MainFrame
+TabContainer.BackgroundTransparency = 1
+TabContainer.Position = UDim2.new(0.03, 0, 0.12, 0)
+TabContainer.Size = UDim2.new(0.94, 0, 0, 30)
+
+local NoKeyBtn = Instance.new("TextButton", TabContainer)
+NoKeyBtn.Size = UDim2.new(0.32, 0, 1, 0)
+NoKeyBtn.Text = "NO KEY"
+NoKeyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
+NoKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+NoKeyBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", NoKeyBtn)
+
+local KeyBtn = Instance.new("TextButton", TabContainer)
+KeyBtn.Position = UDim2.new(0.34, 0, 0, 0)
+KeyBtn.Size = UDim2.new(0.32, 0, 1, 0)
+KeyBtn.Text = "CÓ KEY"
+KeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+KeyBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+KeyBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", KeyBtn)
+
+local HopBtn = Instance.new("TextButton", TabContainer)
+HopBtn.Position = UDim2.new(0.68, 0, 0, 0)
+HopBtn.Size = UDim2.new(0.32, 0, 1, 0)
+HopBtn.Text = "HOP SERVER"
+HopBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+HopBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+HopBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", HopBtn)
+
+-- Khung danh sách
+local function makeScroll()
+    local sf = Instance.new("ScrollingFrame", MainFrame)
+    sf.Position = UDim2.new(0.03, 0, 0.25, 0)
+    sf.Size = UDim2.new(0.94, 0, 0.7, 0)
+    sf.BackgroundTransparency = 1
+    sf.CanvasSize = UDim2.new(0, 0, 0, 500)
+    sf.ScrollBarThickness = 5
+    sf.Visible = false
+    local layout = Instance.new("UIListLayout", sf)
+    layout.Padding = UDim.new(0, 6)
+    return sf
+end
+
+local NoKeyScroll = makeScroll()
+local KeyScroll = makeScroll()
+NoKeyScroll.Visible = true
+
+local noKeyScripts = {
+    {name = "1. NIGHT HUB", url = "https://raw.githubusercontent.com/kadit9999/stealanegg/refs/heads/main/nightegg.lua"},
+    {name = "2. CHILI HUB V2", url = "https://gist.githubusercontent.com/ronnei/1fa67c56dd9af203b192d15e752928e5/raw/4e2d5105640e09a008b4ae6df23f9708cadfef06/chilliv2-stealanegg", copyKey = "chillihubv2-513A-75FC-4041"},
+    {name = "3. FOX NAME", url = "https://raw.githubusercontent.com/caomod2077/Script/refs/heads/main/Fn-stealanegg.lua"},
+    {name = "4. LIMBO HUB", url = "https://limbohub.my.id/loader.lua"},
+    {name = "5. PULSE ZAX", url = "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua"},
+    {name = "6. CHILI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
+    {name = "7. LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"}
+}
+
+local keyScripts = {
+    {name = "1. SENA HUB", url = "https://raw.githubusercontent.com/SenaHub/Sena/refs/heads/main/SenaV6.lua"},
+    {name = "2. ZEROIN", url = "https://zeroinhub.com/api/script"},
+    {name = "3. SYS HUB", url = "https://syshub.fun/free"},
+    {name = "4. AJJAN", url = "https://api.luarmor.net/files/v4/loaders/359e97f8618e9008afe5f496184ebb7c.lua"},
+    {name = "5. CLOVER HUB", url = "https://cloverhub.app/clover.lua"},
+    {name = "6. NASI RENDANG", url = "https://raw.githubusercontent.com/JualNasiRendang/loader/refs/heads/main/main.lua"},
+    {name = "7. FYY HUB", url = "https://FyyCommunity.my.id"},
+    {name = "8. BIG FROOT HUB", url = "https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"},
+    {name = "9. REALKID TIẾNG VIỆT", url = "https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"}
+}
+
+local function renderList(scroll, list)
+    for _, item in ipairs(list) do
+        local f = Instance.new("Frame", scroll)
+        f.Size = UDim2.new(1, -10, 0, 38)
+        f.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+        Instance.new("UICorner", f).CornerRadius = UDim.new(0, 5)
+
+        local lbl = Instance.new("TextLabel", f)
+        lbl.Position = UDim2.new(0.03, 0, 0, 0)
+        lbl.Size = UDim2.new(0.65, 0, 1, 0)
+        lbl.Text = item.name
+        lbl.TextColor3 = Color3.fromRGB(220, 220, 220)
+        lbl.Font = Enum.Font.GothamBold
+        lbl.TextSize = 12
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+        lbl.BackgroundTransparency = 1
+
+        local btn = Instance.new("TextButton", f)
+        btn.Position = UDim2.new(0.7, 0, 0.15, 0)
+        btn.Size = UDim2.new(0.27, 0, 0.7, 0)
+        btn.Text = "CHẠY"
+        btn.BackgroundColor3 = Color3.fromRGB(40, 160, 80)
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 11
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+
+        btn.MouseButton1Click:Connect(function()
+            if item.copyKey and setclipboard then setclipboard(item.copyKey) end
+            btn.Text = "ĐANG TẢI..."
+            task.spawn(function()
+                pcall(function() loadstring(game:HttpGet(item.url))() end)
+                task.wait(1)
+                btn.Text = "CHẠY"
+            end)
+        end)
+    end
+end
+
+renderList(NoKeyScroll, noKeyScripts)
+renderList(KeyScroll, keyScripts)
+
+-- Khung Hop Server
+local HopFrame = Instance.new("Frame", MainFrame)
+HopFrame.Position = UDim2.new(0.03, 0, 0.25, 0)
+HopFrame.Size = UDim2.new(0.94, 0, 0.7, 0)
+HopFrame.BackgroundTransparency = 1
+HopFrame.Visible = false
+
+local DoHopBtn = Instance.new("TextButton", HopFrame)
+DoHopBtn.Size = UDim2.new(1, 0, 0, 40)
+DoHopBtn.Position = UDim2.new(0, 0, 0.2, 0)
+DoHopBtn.Text = "🚀 CHUYỂN SERVER NGAY"
+DoHopBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+DoHopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DoHopBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", DoHopBtn)
+
+DoHopBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Bubu2k/Rubutv/refs/heads/main/RubuHopSeverlow.lua"))()
+end)
+
+-- Chuyển Tab
+NoKeyBtn.MouseButton1Click:Connect(function()
+    NoKeyScroll.Visible = true; KeyScroll.Visible = false; HopFrame.Visible = false
+    NoKeyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60); KeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); HopBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+end)
+
+KeyBtn.MouseButton1Click:Connect(function()
+    NoKeyScroll.Visible = false; KeyScroll.Visible = true; HopFrame.Visible = false
+    KeyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60); NoKeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); HopBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+end)
+
+HopBtn.MouseButton1Click:Connect(function()
+    NoKeyScroll.Visible = false; KeyScroll.Visible = false; HopFrame.Visible = true
+    HopBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60); NoKeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); KeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+end)
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)

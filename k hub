@@ -86,14 +86,14 @@ KeyBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
 KeyBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", KeyBtn)
 
-local HopBtn = Instance.new("TextButton", TabContainer)
-HopBtn.Position = UDim2.new(0.68, 0, 0, 0)
-HopBtn.Size = UDim2.new(0.32, 0, 1, 0)
-HopBtn.Text = "HOP SERVER"
-HopBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-HopBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-HopBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", HopBtn)
+local AntiHitBtn = Instance.new("TextButton", TabContainer)
+AntiHitBtn.Position = UDim2.new(0.68, 0, 0, 0)
+AntiHitBtn.Size = UDim2.new(0.32, 0, 1, 0)
+AntiHitBtn.Text = "ANTI HIT"
+AntiHitBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+AntiHitBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+AntiHitBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", AntiHitBtn)
 
 -- Khung danh sách
 local function makeScroll()
@@ -111,6 +111,8 @@ end
 
 local NoKeyScroll = makeScroll()
 local KeyScroll = makeScroll()
+local AntiHitScroll = makeScroll()
+
 NoKeyScroll.Visible = true
 
 local noKeyScripts = {
@@ -133,6 +135,10 @@ local keyScripts = {
     {name = "7. FYY HUB", url = "https://FyyCommunity.my.id"},
     {name = "8. BIG FROOT HUB", url = "https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"},
     {name = "9. REALKID TIẾNG VIỆT", url = "https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"}
+}
+
+local antiHitScripts = {
+    {name = "1. BÚ CÚ HUB", url = "https://raw.githubusercontent.com/Wzeus-NTH/Wzeusno1/main/Wzeus/nthzz"}
 }
 
 local function renderList(scroll, list)
@@ -176,41 +182,22 @@ end
 
 renderList(NoKeyScroll, noKeyScripts)
 renderList(KeyScroll, keyScripts)
-
--- Khung Hop Server
-local HopFrame = Instance.new("Frame", MainFrame)
-HopFrame.Position = UDim2.new(0.03, 0, 0.25, 0)
-HopFrame.Size = UDim2.new(0.94, 0, 0.7, 0)
-HopFrame.BackgroundTransparency = 1
-HopFrame.Visible = false
-
-local DoHopBtn = Instance.new("TextButton", HopFrame)
-DoHopBtn.Size = UDim2.new(1, 0, 0, 40)
-DoHopBtn.Position = UDim2.new(0, 0, 0.2, 0)
-DoHopBtn.Text = "🚀 CHUYỂN SERVER NGAY"
-DoHopBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
-DoHopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-DoHopBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", DoHopBtn)
-
-DoHopBtn.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Bubu2k/Rubutv/refs/heads/main/RubuHopSeverlow.lua"))()
-end)
+renderList(AntiHitScroll, antiHitScripts)
 
 -- Chuyển Tab
 NoKeyBtn.MouseButton1Click:Connect(function()
-    NoKeyScroll.Visible = true; KeyScroll.Visible = false; HopFrame.Visible = false
-    NoKeyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60); KeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); HopBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    NoKeyScroll.Visible = true; KeyScroll.Visible = false; AntiHitScroll.Visible = false
+    NoKeyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60); KeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); AntiHitBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 end)
 
 KeyBtn.MouseButton1Click:Connect(function()
-    NoKeyScroll.Visible = false; KeyScroll.Visible = true; HopFrame.Visible = false
-    KeyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60); NoKeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); HopBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    NoKeyScroll.Visible = false; KeyScroll.Visible = true; AntiHitScroll.Visible = false
+    KeyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60); NoKeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); AntiHitBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 end)
 
-HopBtn.MouseButton1Click:Connect(function()
-    NoKeyScroll.Visible = false; KeyScroll.Visible = false; HopFrame.Visible = true
-    HopBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60); NoKeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); KeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+AntiHitBtn.MouseButton1Click:Connect(function()
+    NoKeyScroll.Visible = false; KeyScroll.Visible = false; AntiHitScroll.Visible = true
+    AntiHitBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60); NoKeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); KeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 end)
 
 ToggleBtn.MouseButton1Click:Connect(function()

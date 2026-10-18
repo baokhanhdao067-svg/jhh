@@ -1,6 +1,32 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
+-- Cấu hình LuaProtect
+local _LP_CONFIG = {
+    HOST_URL = "https://exec.luaprotect.dev",
+    WS_URL = "wss://exec.luaprotect.dev/ws",
+    SCRIPT_ID = "gdDwj7W-4Ofyqgcm",
+    SCRIPT_NAME = "Break and Steal",
+    RUNNER_ID = "55ccd2e5f1e452e88512f44c8133cc29",
+    RUNNER_KEY = "093b0449380a3c571af520c757d0cbc6e9f509b19ee46f9804f29bcd1253867e",
+    NESTED_IMPORT = "0",
+    DISABLE_NOTIFICATIONS = 0,
+    THEME_BG = "",
+    THEME_ACCENT = "",
+    THEME_TEXT = "",
+    RUNNER_KEY_PROMPT = "0",
+    CONTINUOUS_SESSION = "0",
+    CONTINUOUS_RECONNECT = "0",
+    HANDOFF_RUNNER_ID = "",
+    HANDOFF_KEY = "",
+    HANDOFF_RUN_ID = "",
+    HANDOFF_SESSION_ID = ""
+}; 
+
+if getgenv then getgenv()._LP_RUNNER_CONFIG = _LP_CONFIG end 
+if shared then shared._LP_RUNNER_CONFIG = _LP_CONFIG end 
+if _G then _G._LP_RUNNER_CONFIG = _LP_CONFIG end
+
 -- Chọn nơi chứa Gui an toàn nhất
 local Parent = game:GetService("CoreGui")
 local success = pcall(function() local a = Parent.Name end)
@@ -15,7 +41,7 @@ ScreenGui.Name = "KHUB_Main"
 ScreenGui.Parent = Parent
 ScreenGui.ResetOnSpawn = false
 
--- Nút Bật/Tắt Menu (Góc trên bên trái)
+-- Nút Bật/Tắt Menu (Góc trên bên trái, có thể kéo thả)
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Parent = ScreenGui
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -95,13 +121,13 @@ AntiHitBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
 AntiHitBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", AntiHitBtn)
 
--- Khung danh sách
-local function makeScroll()
+-- Khung danh sách cuộn
+local function makeScroll(itemCount)
     local sf = Instance.new("ScrollingFrame", MainFrame)
     sf.Position = UDim2.new(0.03, 0, 0.25, 0)
     sf.Size = UDim2.new(0.94, 0, 0.7, 0)
     sf.BackgroundTransparency = 1
-    sf.CanvasSize = UDim2.new(0, 0, 0, 500)
+    sf.CanvasSize = UDim2.new(0, 0, 0, math.max(500, itemCount * 45))
     sf.ScrollBarThickness = 5
     sf.Visible = false
     local layout = Instance.new("UIListLayout", sf)
@@ -109,22 +135,21 @@ local function makeScroll()
     return sf
 end
 
-local NoKeyScroll = makeScroll()
-local KeyScroll = makeScroll()
-local AntiHitScroll = makeScroll()
-
-NoKeyScroll.Visible = true
-
+-- Danh sách script NO KEY (Đã tích hợp thêm các script mới)
 local noKeyScripts = {
     {name = "1. NIGHT HUB", url = "https://raw.githubusercontent.com/kadit9999/stealanegg/refs/heads/main/nightegg.lua"},
-    {name = "2. CHILI HUB V2", url = "https://gist.githubusercontent.com/ronnei/1fa67c56dd9af203b192d15e752928e5/raw/4e2d5105640e09a008b4ae6df23f9708cadfef06/chilliv2-stealanegg", copyKey = "chillihubv2-513A-75FC-4041"},
-    {name = "3. FOX NAME", url = "https://raw.githubusercontent.com/caomod2077/Script/refs/heads/main/Fn-stealanegg.lua"},
-    {name = "4. LIMBO HUB", url = "https://limbohub.my.id/loader.lua"},
-    {name = "5. PULSE ZAX", url = "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua"},
-    {name = "6. CHILI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
-    {name = "7. LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"}
+    {name = "2. CHILI HUB V4", url = "https://orrxl4-protector.com/api/raw?id=qluw4v3a"},
+    {name = "3. CHILLI HUB", url = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"},
+    {name = "4. FOX NAME", url = "https://raw.githubusercontent.com/caomod2077/Script/refs/heads/main/Fn-stealanegg.lua"},
+    {name = "5. LIMBO HUB", url = "https://limbohub.my.id/loader.lua"},
+    {name = "6. PULSE ZAX", url = "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua"},
+    {name = "7. LENNON HUB V4", url = "https://raw.githubusercontent.com/lennonxscripts/lennonhubv4/refs/heads/main/stealanegg"},
+    {name = "8. LENNON FARM V2", url = "https://raw.githubusercontent.com/lennonxscripts/lennonfarmv2/refs/heads/main/stealanegg"},
+    {name = "9. MIIRANDA HUB", url = "https://raw.githubusercontent.com/miirandahub/loader/refs/heads/main/stealeggies"},
+    {name = "10. DHII KICK", url = "https://raw.githubusercontent.com/dhiisepertiorang/dhii_kick.lua/refs/heads/main/dhiitoaa.lua"}
 }
 
+-- Danh sách script CÓ KEY (Đã tích hợp thêm các script hệ thống auth/key mới)
 local keyScripts = {
     {name = "1. SENA HUB", url = "https://raw.githubusercontent.com/SenaHub/Sena/refs/heads/main/SenaV6.lua"},
     {name = "2. ZEROIN", url = "https://zeroinhub.com/api/script"},
@@ -134,12 +159,22 @@ local keyScripts = {
     {name = "6. NASI RENDANG", url = "https://raw.githubusercontent.com/JualNasiRendang/loader/refs/heads/main/main.lua"},
     {name = "7. FYY HUB", url = "https://FyyCommunity.my.id"},
     {name = "8. BIG FROOT HUB", url = "https://raw.githubusercontent.com/hanniii1/Loader/refs/heads/main/BFLoader.lua"},
-    {name = "9. REALKID TIẾNG VIỆT", url = "https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"}
+    {name = "9. REALKID TIẾNG VIỆT", url = "https://raw.githubusercontent.com/realkidhub/realkid/refs/heads/main/main.lua"},
+    {name = "10. LUMINON HUB", url = "http://luminon.top/loader.lua"},
+    {name = "11. XENITH HUB", url = "https://xenith-auth.online/v1/loader/5b193fc732db5c93"},
+    {name = "12. LUARMOR HUB", url = "https://api.luarmor.net/files/v4/loaders/271f96ca25f29ae395be1c0f9e6f4ead.lua"},
+    {name = "13. FLOWAUTH HUB", url = "https://flowauth.net/v1/loaders/02a9ed204f6b2fbff70b6d171251a3f7.lua"}
 }
 
 local antiHitScripts = {
     {name = "1. BÚ CÚ HUB", url = "https://raw.githubusercontent.com/Wzeus-NTH/Wzeusno1/main/Wzeus/nthzz"}
 }
+
+local NoKeyScroll = makeScroll(#noKeyScripts)
+local KeyScroll = makeScroll(#keyScripts)
+local AntiHitScroll = makeScroll(#antiHitScripts)
+
+NoKeyScroll.Visible = true
 
 local function renderList(scroll, list)
     for _, item in ipairs(list) do
@@ -184,22 +219,26 @@ renderList(NoKeyScroll, noKeyScripts)
 renderList(KeyScroll, keyScripts)
 renderList(AntiHitScroll, antiHitScripts)
 
--- Chuyển Tab
+-- Chuyển Tab qua lại
 NoKeyBtn.MouseButton1Click:Connect(function()
     NoKeyScroll.Visible = true; KeyScroll.Visible = false; AntiHitScroll.Visible = false
     NoKeyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60); KeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); AntiHitBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    NoKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255); KeyBtn.TextColor3 = Color3.fromRGB(150, 150, 150); AntiHitBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
 end)
 
 KeyBtn.MouseButton1Click:Connect(function()
     NoKeyScroll.Visible = false; KeyScroll.Visible = true; AntiHitScroll.Visible = false
     KeyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60); NoKeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); AntiHitBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    KeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255); NoKeyBtn.TextColor3 = Color3.fromRGB(150, 150, 150); AntiHitBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
 end)
 
 AntiHitBtn.MouseButton1Click:Connect(function()
     NoKeyScroll.Visible = false; KeyScroll.Visible = false; AntiHitScroll.Visible = true
     AntiHitBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60); NoKeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); KeyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    AntiHitBtn.TextColor3 = Color3.fromRGB(255, 255, 255); NoKeyBtn.TextColor3 = Color3.fromRGB(150, 150, 150); KeyBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
 end)
 
+-- Nút Bật/Tắt Menu chính
 ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)

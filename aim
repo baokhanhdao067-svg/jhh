@@ -1,345 +1,380 @@
--- [[ GOD MODE V8 - HYPERION ULTRA EDITION (200% OVERDRIVE) ]] --
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local VirtualUser = game:GetService("VirtualUser")
 local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
+local ParentGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- [[ CẤU HÌNH HỆ THỐNG V8 ]] --
-local Settings = {
-    AimbotEnabled = true,
-    AimHeadRate = 200,        -- Tỷ lệ ghim đầu Overdrive (Max 200%)
-    UltraHardLock = true,     -- Lock ghim dính cứng 100% không lệch 1 ly
-    Prediction = true,        -- AI đoán vị trí di chuyển
-    PredictSpeed = 0.135,
-    SilentHitbox = true,      -- Mở rộng Hitbox đầu
-    HitboxSize = 7,           -- Kích thước Hitbox đầu lớn
-    FovRadius = 250,
-    ShowFov = true,
-    EspEnabled = true,        -- Chức năng 1: Định vị + Thanh máu
-    TargetPuppets = true,     -- Quét NPC / Con rối / Quái
-    EspTracer = true          -- Vẽ dây chỉ hướng
-}
+-- Xóa UI cũ nếu đang chạy
+if ParentGui:FindFirstChild("CheatMenuV12") then
+    ParentGui.CheatMenuV12:Destroy()
+end
+if ParentGui:FindFirstChild("FOVCircleV12") then
+    ParentGui.FOVCircleV12:Destroy()
+end
 
--- [[ 1. TẠO VÒNG TRÒN FOV ]] --
-local FovCircle = Drawing.new("Circle")
-FovCircle.Thickness = 2
-FovCircle.NumSides = 90
-FovCircle.Filled = false
-FovCircle.Transparency = 0.85
-FovCircle.Visible = Settings.ShowFov
-FovCircle.Radius = Settings.FovRadius
-FovCircle.Color = Color3.fromRGB(255, 30, 90)
+-- ==================== BIẾN TRẠNG THÁI ====================
+local espEnabled = false
+local aimbotEnabled = false
+local teleKillEnabled = false
+local selectedTarget = nil
+local fovRadius = 100
 
--- [[ 2. GIAO DIỆN GUI MOBILE & PC ]] --
+-- ==================== VÒNG TRÒN FOV ====================
+local FOVGui = Instance.new("ScreenGui")
+FOVGui.Name = "FOVCircleV12"
+FOVGui.Parent = ParentGui
+FOVGui.ResetOnSpawn = false
+
+local FOVCircle = Instance.new("Frame")
+FOVCircle.Name = "FOVCircle"
+FOVCircle.Parent = FOVGui
+FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
+FOVCircle.Size = UDim2.new(0, fovRadius * 2, 0, fovRadius * 2)
+FOVCircle.BackgroundTransparency = 1
+
+local FOVCorner = Instance.new("UICorner")
+FOVCorner.CornerRadius = UDim.new(1, 0)
+FOVCorner.Parent = FOVCircle
+
+local FOVStroke = Instance.new("UIStroke")
+FOVStroke.Parent = FOVCircle
+FOVStroke.Color = Color3.fromRGB(0, 255, 128)
+FOVStroke.Thickness = 1.5
+
+-- ==================== GIAO DIỆN UI MAIN ====================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DeltaGodModeV8"
+ScreenGui.Name = "CheatMenuV12"
+ScreenGui.Parent = ParentGui
 ScreenGui.ResetOnSpawn = false
-pcall(function() ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end)
 
--- Nút Tròn Di Động Bật/Tắt Menu
-local ToggleMenuBtn = Instance.new("TextButton")
-ToggleMenuBtn.Size = UDim2.new(0, 52, 0, 52)
-ToggleMenuBtn.Position = UDim2.new(0.03, 0, 0.15, 0)
-ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(15, 10, 20)
-ToggleMenuBtn.Text = "⚡ V8"
-ToggleMenuBtn.TextColor3 = Color3.fromRGB(255, 30, 90)
-ToggleMenuBtn.Font = Enum.Font.SourceSansBold
-ToggleMenuBtn.TextSize = 17
-ToggleMenuBtn.Active = true
-ToggleMenuBtn.Draggable = true
-ToggleMenuBtn.Parent = ScreenGui
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Parent = ScreenGui
+ToggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+ToggleButton.BorderColor3 = Color3.fromRGB(0, 255, 128)
+ToggleButton.BorderSizePixel = 2
+ToggleButton.Position = UDim2.new(0, 15, 0.35, 0)
+ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.Text = "MENU"
+ToggleButton.TextColor3 = Color3.fromRGB(0, 255, 128)
+ToggleButton.TextSize = 14
+ToggleButton.Active = true
+ToggleButton.Draggable = true
 
 local UICornerBtn = Instance.new("UICorner")
 UICornerBtn.CornerRadius = UDim.new(1, 0)
-UICornerBtn.Parent = ToggleMenuBtn
+UICornerBtn.Parent = ToggleButton
 
-local UIStrokeBtn = Instance.new("UIStroke")
-UIStrokeBtn.Color = Color3.fromRGB(255, 30, 90)
-UIStrokeBtn.Thickness = 2
-UIStrokeBtn.Parent = ToggleMenuBtn
-
--- Frame Menu Chính
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 290, 0, 365)
-MainFrame.Position = UDim2.new(0.12, 0, 0.15, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 8, 14)
-MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+MainFrame.BorderColor3 = Color3.fromRGB(45, 45, 45)
+MainFrame.Position = UDim2.new(0, 75, 0.2, 0)
+MainFrame.Size = UDim2.new(0, 310, 0, 380)
+MainFrame.Visible = true
 MainFrame.Active = true
 MainFrame.Draggable = true
-MainFrame.Visible = true
-MainFrame.Parent = ScreenGui
 
 local UICornerFrame = Instance.new("UICorner")
-UICornerFrame.CornerRadius = UDim.new(0, 10)
+UICornerFrame.CornerRadius = UDim.new(0, 8)
 UICornerFrame.Parent = MainFrame
 
-local UIStrokeFrame = Instance.new("UIStroke")
-UIStrokeFrame.Color = Color3.fromRGB(255, 30, 90)
-UIStrokeFrame.Thickness = 1.5
-UIStrokeFrame.Parent = MainFrame
-
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 38)
-Title.BackgroundColor3 = Color3.fromRGB(20, 12, 22)
-Title.Text = "👑 GOD MODE V8 - HYPERION 200% 👑"
-Title.TextColor3 = Color3.fromRGB(255, 30, 90)
-Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 13
 Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "UNIVERSAL MENU V12 (VIRTUAL CLICK)"
+Title.TextColor3 = Color3.fromRGB(0, 255, 128)
+Title.TextSize = 12
 
-ToggleMenuBtn.MouseButton1Click:Connect(function()
+local UICornerTitle = Instance.new("UICorner")
+UICornerTitle.CornerRadius = UDim.new(0, 8)
+UICornerTitle.Parent = Title
+
+ToggleButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
-local function CreateToggle(text, posY, defaultVal, callback)
+local ContentScroll = Instance.new("ScrollingFrame")
+ContentScroll.Parent = MainFrame
+ContentScroll.BackgroundTransparency = 1
+ContentScroll.Position = UDim2.new(0, 10, 0, 45)
+ContentScroll.Size = UDim2.new(1, -20, 1, -55)
+ContentScroll.CanvasSize = UDim2.new(0, 0, 0, 320)
+ContentScroll.ScrollBarThickness = 4
+
+local ContentLayout = Instance.new("UIListLayout")
+ContentLayout.Parent = ContentScroll
+ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ContentLayout.Padding = UDim.new(0, 8)
+
+-- ==================== BỘ NHẬN DIỆN MỤC TIÊU ====================
+local function isValidTarget(model)
+    if not model or model == LocalPlayer.Character then return false end
+    local hum = model:FindFirstChildOfClass("Humanoid")
+    local rootPart = model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Torso")
+    local head = model:FindFirstChild("Head")
+    
+    if hum and hum.Health > 0 and rootPart and head then
+        local plr = Players:GetPlayerFromCharacter(model)
+        if plr then
+            if plr == LocalPlayer then return false end
+            if LocalPlayer.Team and plr.Team and LocalPlayer.Team == plr.Team then return false end
+            return true
+        end
+        return true -- Nhận diện tất cả Con rối, NPC, Target
+    end
+    return false
+end
+
+local function equipWeapon()
+    local char = LocalPlayer.Character
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    if char and backpack then
+        if not char:FindFirstChildOfClass("Tool") then
+            for _, item in ipairs(backpack:GetChildren()) do
+                if item:IsA("Tool") then
+                    item.Parent = char
+                    break
+                end
+            end
+        end
+    end
+end
+
+local function createToggleButton(text, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.9, 0, 0, 28)
-    btn.Position = UDim2.new(0.05, 0, 0, posY)
-    btn.BackgroundColor3 = defaultVal and Color3.fromRGB(255, 30, 90) or Color3.fromRGB(35, 30, 42)
-    btn.Text = text .. ": " .. (defaultVal and "ON" or "OFF")
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Parent = ContentScroll
+    btn.BackgroundColor3 = Color3.fromRGB(32, 32, 32)
+    btn.Size = UDim2.new(1, 0, 0, 35)
     btn.Font = Enum.Font.SourceSansBold
-    btn.TextSize = 12
-    btn.Parent = MainFrame
+    btn.Text = text .. ": TẮT"
+    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    btn.TextSize = 13
     
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = btn
     
-    local state = defaultVal
+    local state = false
     btn.MouseButton1Click:Connect(function()
         state = not state
-        btn.BackgroundColor3 = state and Color3.fromRGB(255, 30, 90) or Color3.fromRGB(35, 30, 42)
-        btn.Text = text .. ": " .. (state and "ON" or "OFF")
-        callback(state)
+        if state then
+            btn.Text = text .. ": BẬT"
+            btn.TextColor3 = Color3.fromRGB(0, 255, 128)
+            btn.BackgroundColor3 = Color3.fromRGB(35, 55, 40)
+        else
+            btn.Text = text .. ": TẮT"
+            btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+            btn.BackgroundColor3 = Color3.fromRGB(32, 32, 32)
+        end
+        pcall(callback, state)
     end)
     return btn
 end
 
--- Danh sách công tắc bật/tắt
-CreateToggle("Chức Năng 1: Định Vị ESP & Máu", 45, Settings.EspEnabled, function(v) Settings.EspEnabled = v end)
-CreateToggle("Chức Năng 2: AIMBOT Ghim Người Gần Nhất", 78, Settings.AimbotEnabled, function(v) Settings.AimbotEnabled = v end)
-CreateToggle("Aim Cả Con Rối / Quái / NPC", 111, Settings.TargetPuppets, function(v) Settings.TargetPuppets = v end)
-CreateToggle("Ghim Siêu Cứng 100% (Ultra Hard Lock)", 144, Settings.UltraHardLock, function(v) Settings.UltraHardLock = v end)
-CreateToggle("Hitbox Expander (Phóng To Đầu)", 177, Settings.SilentHitbox, function(v) Settings.SilentHitbox = v end)
-CreateToggle("ESP Tracer Line (Dây Dắt)", 210, Settings.EspTracer, function(v) Settings.EspTracer = v end)
-CreateToggle("Hiện Vòng Tròn FOV", 243, Settings.ShowFov, function(v) Settings.ShowFov = v; FovCircle.Visible = v end)
+createToggleButton("1. Định Vị ESP (Player, Con Rối, NPC)", function(state) espEnabled = state end)
+createToggleButton("2. Ghim Đầu Aimbot FOV", function(state) aimbotEnabled = state end)
 
--- Thanh Trượt Chỉnh Tỷ Lệ Vô Đầu 200%
-local SliderLabel = Instance.new("TextLabel")
-SliderLabel.Size = UDim2.new(0.9, 0, 0, 18)
-SliderLabel.Position = UDim2.new(0.05, 0, 0, 280)
-SliderLabel.BackgroundTransparency = 1
-SliderLabel.Text = "Tỷ Lệ Tối Đa Vào Đầu: " .. Settings.AimHeadRate .. "%"
-SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-SliderLabel.Font = Enum.Font.SourceSansBold
-SliderLabel.TextSize = 12
-SliderLabel.Parent = MainFrame
-
+-- Thanh chỉnh kích thước FOV
 local SliderFrame = Instance.new("Frame")
-SliderFrame.Size = UDim2.new(0.9, 0, 0, 12)
-SliderFrame.Position = UDim2.new(0.05, 0, 0, 305)
-SliderFrame.BackgroundColor3 = Color3.fromRGB(35, 30, 42)
-SliderFrame.Parent = MainFrame
+SliderFrame.Parent = ContentScroll
+SliderFrame.BackgroundColor3 = Color3.fromRGB(32, 32, 32)
+SliderFrame.Size = UDim2.new(1, 0, 0, 45)
 
 local SliderCorner = Instance.new("UICorner")
-SliderCorner.CornerRadius = UDim.new(0, 4)
+SliderCorner.CornerRadius = UDim.new(0, 6)
 SliderCorner.Parent = SliderFrame
 
+local SliderTitle = Instance.new("TextLabel")
+SliderTitle.Parent = SliderFrame
+SliderTitle.BackgroundTransparency = 1
+SliderTitle.Position = UDim2.new(0, 10, 0, 3)
+SliderTitle.Size = UDim2.new(1, -20, 0, 18)
+SliderTitle.Font = Enum.Font.SourceSansBold
+SliderTitle.Text = "Kích Thước FOV: " .. fovRadius .. "px"
+SliderTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+SliderTitle.TextSize = 12
+SliderTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+local SliderBack = Instance.new("Frame")
+SliderBack.Parent = SliderFrame
+SliderBack.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+SliderBack.Position = UDim2.new(0, 10, 0, 26)
+SliderBack.Size = UDim2.new(1, -20, 0, 8)
+
 local SliderFill = Instance.new("Frame")
-SliderFill.Size = UDim2.new(Settings.AimHeadRate / 200, 0, 1, 0)
-SliderFill.BackgroundColor3 = Color3.fromRGB(255, 30, 90)
-SliderFill.Parent = SliderFrame
+SliderFill.Parent = SliderBack
+SliderFill.BackgroundColor3 = Color3.fromRGB(0, 255, 128)
+SliderFill.Size = UDim2.new((fovRadius - 30) / (300 - 30), 0, 1, 0)
 
-local isDragging = false
-local function UpdateSlider(input)
-    local pos = math.clamp((input.Position.X - SliderFrame.AbsolutePosition.X) / SliderFrame.AbsoluteSize.X, 0, 1)
-    SliderFill.Size = UDim2.new(pos, 0, 1, 0)
-    Settings.AimHeadRate = math.floor(pos * 200)
-    SliderLabel.Text = "Tỷ Lệ Tối Đa Vào Đầu: " .. Settings.AimHeadRate .. "%"
+local dragging = false
+SliderBack.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+    end
+end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local posX = math.clamp((input.Position.X - SliderBack.AbsolutePosition.X) / SliderBack.AbsoluteSize.X, 0, 1)
+        SliderFill.Size = UDim2.new(posX, 0, 1, 0)
+        fovRadius = math.floor(30 + (posX * (300 - 30)))
+        SliderTitle.Text = "Kích Thước FOV: " .. fovRadius .. "px"
+        FOVCircle.Size = UDim2.new(0, fovRadius * 2, 0, fovRadius * 2)
+    end
+end)
+
+createToggleButton("3. Auto Tele + Bám + Virtual Click Kill", function(state)
+    teleKillEnabled = state
+    if state then equipWeapon() else selectedTarget = nil end
+end)
+
+local function getAllTargets()
+    local targets = {}
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and isValidTarget(p.Character) then
+            table.insert(targets, p.Character)
+        end
+    end
+    for _, obj in pairs(Workspace:GetDescendants()) do
+        if obj:IsA("Model") and isValidTarget(obj) and not Players:GetPlayerFromCharacter(obj) then
+            table.insert(targets, obj)
+        end
+    end
+    return targets
 end
 
-SliderFrame.InputBegan:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
-        isDragging = true; UpdateSlider(inp)
-    end
-end)
-UserInputService.InputEnded:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
-        isDragging = false
-    end
-end)
-UserInputService.InputChanged:Connect(function(inp)
-    if isDragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
-        UpdateSlider(inp)
-    end
-end)
-
--- [[ 3. THUẬT TOÁN TÌM MỤC TIÊU Ở KHOẢNG CÁCH GẦN NHẤT ]] --
-local function GetNearestTarget()
-    local nearestHead = nil
-    local shortestDistance = math.huge
-    local myChar = LocalPlayer.Character
-    local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
-
-    if not myHrp then return nil end
-
-    -- Quét Người Chơi Gần Nhất
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") and plr.Character:FindFirstChild("Humanoid") then
-            if plr.Character.Humanoid.Health > 0 then
-                local head = plr.Character.Head
-                local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
-                if onScreen then
-                    local dist = (head.Position - myHrp.Position).Magnitude
-                    if dist < shortestDistance then
-                        shortestDistance = dist
-                        nearestHead = head
-                    end
+local function getNearestTarget()
+    local nearest = nil
+    local shortestDist = math.huge
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local myPos = LocalPlayer.Character.HumanoidRootPart.Position
+        for _, char in pairs(getAllTargets()) do
+            local root = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
+            if root then
+                local dist = (root.Position - myPos).Magnitude
+                if dist < shortestDist then
+                    shortestDist = dist
+                    nearest = char
                 end
             end
         end
     end
-
-    -- Quét NPC / Con Rối Gần Nhất
-    if Settings.TargetPuppets then
-        for _, obj in pairs(Workspace:GetDescendants()) do
-            if obj:IsA("Model") and obj ~= myChar and obj:FindFirstChild("Head") and obj:FindFirstChild("Humanoid") then
-                if not Players:GetPlayerFromCharacter(obj) and obj.Humanoid.Health > 0 then
-                    local head = obj.Head
-                    local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
-                    if onScreen then
-                        local dist = (head.Position - myHrp.Position).Magnitude
-                        if dist < shortestDistance then
-                            shortestDistance = dist
-                            nearestHead = head
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    return nearestHead
+    return nearest
 end
 
--- [[ 4. HỆ THỐNG ESP BẢN ĐỒ ]] --
-local EspHolders = {}
-local function DrawEsp(model, name, health, maxHealth, isPlayer)
-    if not EspHolders[model] then
-        local box = Drawing.new("Square")
-        box.Color = isPlayer and Color3.fromRGB(255, 30, 90) or Color3.fromRGB(255, 180, 0)
-        box.Thickness = 1.5; box.Filled = false; box.Visible = false
+-- ==================== VÒNG LẶP XỬ LÝ ====================
 
-        local healthBar = Drawing.new("Square")
-        healthBar.Thickness = 1.5; healthBar.Filled = true; healthBar.Visible = false
-
-        local tracer = Drawing.new("Line")
-        tracer.Color = Color3.fromRGB(255, 30, 90); tracer.Thickness = 1.2; tracer.Visible = false
-
-        local text = Drawing.new("Text")
-        text.Color = Color3.fromRGB(255, 255, 255)
-        text.Size = 12; text.Center = true; text.Outline = true; text.Visible = false
-
-        EspHolders[model] = {Box = box, Health = healthBar, Tracer = tracer, Text = text}
-    end
-
-    local esp = EspHolders[model]
-    local hrp = model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Torso") or model.PrimaryPart
-    if hrp and model:FindFirstChild("Head") then
-        local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
-        if onScreen then
-            local headPos = Camera:WorldToViewportPoint(model.Head.Position + Vector3.new(0, 0.5, 0))
-            local legPos = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
-            local height = math.abs(headPos.Y - legPos.Y)
-            local width = height / 1.8
-
-            esp.Box.Size = Vector2.new(width, height)
-            esp.Box.Position = Vector2.new(screenPos.X - width / 2, screenPos.Y - height / 2)
-            esp.Box.Visible = true
-
-            local healthPct = math.clamp(health / maxHealth, 0, 1)
-            esp.Health.Size = Vector2.new(2, height * healthPct)
-            esp.Health.Position = Vector2.new((screenPos.X - width / 2) - 5, (screenPos.Y + height / 2) - (height * healthPct))
-            esp.Health.Color = Color3.fromRGB(255 * (1 - healthPct), 255 * healthPct, 0)
-            esp.Health.Visible = true
-
-            if Settings.EspTracer then
-                esp.Tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-                esp.Tracer.To = Vector2.new(screenPos.X, screenPos.Y)
-                esp.Tracer.Visible = true
-            else
-                esp.Tracer.Visible = false
-            end
-
-            esp.Text.Text = string.format("%s [%d/%d]", name, math.floor(health), math.floor(maxHealth))
-            esp.Text.Position = Vector2.new(screenPos.X, screenPos.Y - (height / 2) - 14)
-            esp.Text.Visible = true
-        else
-            esp.Box.Visible = false; esp.Health.Visible = false; esp.Tracer.Visible = false; esp.Text.Visible = false
-        end
-    end
-end
-
--- [[ 5. ENGINE V8 HYPERION RENDER STEPPED (ULTRA LOCK 200%) ]] --
+-- 1. AIMBOT
 RunService.RenderStepped:Connect(function()
-    FovCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-
-    -- AIMBOT GHIM TÍCH HỢP LOCK CỨNG 200% OVERDRIVE
-    if Settings.AimbotEnabled then
-        local targetHead = GetNearestTarget()
-        if targetHead then
-            local chance = math.random(1, 100)
-            -- Tăng tỷ lệ dán đạn tối đa 200%
-            if chance <= math.clamp(Settings.AimHeadRate, 1, 100) or Settings.AimHeadRate > 100 then
-                local targetPos = targetHead.Position
-                if Settings.Prediction and targetHead.Parent:FindFirstChild("HumanoidRootPart") then
-                    targetPos = targetPos + (targetHead.Parent.HumanoidRootPart.Velocity * Settings.PredictSpeed)
-                end
-
-                -- Mở rộng kích thước Hitbox Đầu
-                if Settings.SilentHitbox then
-                    targetHead.Size = Vector3.new(Settings.HitboxSize, Settings.HitboxSize, Settings.HitboxSize)
-                    targetHead.Transparency = 0.5
-                    targetHead.CanCollide = false
-                end
-
-                -- Ghim Siêu Cứng 100% CFrame
-                if Settings.UltraHardLock then
-                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos)
-                else
-                    Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, targetPos), 0.45)
-                end
-            end
-        end
-    end
-
-    -- ĐỊNH VỊ ESP
-    if Settings.EspEnabled then
-        for _, plr in pairs(Players:GetPlayers()) do
-            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") and plr.Character:FindFirstChild("Humanoid") then
-                if plr.Character.Humanoid.Health > 0 then
-                    DrawEsp(plr.Character, plr.Name, plr.Character.Humanoid.Health, plr.Character.Humanoid.MaxHealth, true)
-                end
-            end
-        end
-        if Settings.TargetPuppets then
-            for _, obj in pairs(Workspace:GetDescendants()) do
-                if obj:IsA("Model") and obj ~= LocalPlayer.Character and obj:FindFirstChild("Head") and obj:FindFirstChild("Humanoid") then
-                    if not Players:GetPlayerFromCharacter(obj) and obj.Humanoid.Health > 0 then
-                        DrawEsp(obj, obj.Name, obj.Humanoid.Health, obj.Humanoid.MaxHealth, false)
+    if aimbotEnabled then
+        local closestHead = nil
+        local shortestDist = fovRadius
+        local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+        
+        for _, char in pairs(getAllTargets()) do
+            local head = char:FindFirstChild("Head")
+            if head then
+                local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                if onScreen then
+                    local dist = (Vector2.new(pos.X, pos.Y) - screenCenter).Magnitude
+                    if dist <= shortestDist then
+                        shortestDist = dist
+                        closestHead = head
                     end
                 end
             end
         end
-    else
-        for _, esp in pairs(EspHolders) do
-            esp.Box.Visible = false
-            esp.Health.Visible = false
-            esp.Tracer.Visible = false
-            esp.Text.Visible = false
+        if closestHead then
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, closestHead.Position)
+        end
+    end
+end)
+
+-- 2. AUTO TELE + BÁM + VIRTUAL CLICK (GIẢ LẬP CLICK CHUỘT THẬT)
+RunService.RenderStepped:Connect(function()
+    if teleKillEnabled then
+        if not selectedTarget or not selectedTarget.Parent or (selectedTarget:FindFirstChildOfClass("Humanoid") and selectedTarget.Humanoid.Health <= 0) then
+            selectedTarget = getNearestTarget()
+        end
+        
+        if selectedTarget then
+            local targetHRP = selectedTarget:FindFirstChild("HumanoidRootPart") or selectedTarget:FindFirstChild("Torso")
+            local myChar = LocalPlayer.Character
+            if myChar and targetHRP then
+                local myHRP = myChar:FindFirstChild("HumanoidRootPart")
+                if myHRP then
+                    myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 1.5)
+                    equipWeapon()
+                    
+                    -- Dùng VirtualUser để giả lập thao tác click chuột thật nhằm ép game tính sát thương
+                    pcall(function()
+                        VirtualUser:Button1Down(Vector2.new(0,0))
+                        task.wait(0.02)
+                        VirtualUser:Button1Up(Vector2.new(0,0))
+                    end)
+                end
+            end
+        end
+    end
+end)
+
+-- 3. ESP ĐỊNH VỊ
+RunService.RenderStepped:Connect(function()
+    for _, char in pairs(getAllTargets()) do
+        local head = char:FindFirstChild("Head")
+        if head then
+            local tag = head:FindFirstChild("EspTagV12")
+            local highlight = char:FindFirstChild("EspHighlight")
+            
+            if espEnabled then
+                if not highlight then
+                    highlight = Instance.new("Highlight")
+                    highlight.Name = "EspHighlight"
+                    highlight.Adornee = char
+                    highlight.FillColor = Color3.fromRGB(255, 50, 50)
+                    highlight.FillTransparency = 0.5
+                    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    highlight.Parent = char
+                end
+                if not tag then
+                    local billboard = Instance.new("BillboardGui")
+                    billboard.Name = "EspTagV12"
+                    billboard.Adornee = head
+                    billboard.Size = UDim2.new(0, 100, 0, 30)
+                    billboard.StudsOffset = Vector3.new(0, 2, 0)
+                    billboard.AlwaysOnTop = true
+                    
+                    local label = Instance.new("TextLabel")
+                    label.Name = "Label"
+                    label.Parent = billboard
+                    label.BackgroundTransparency = 1
+                    label.Size = UDim2.new(1, 0, 1, 0)
+                    label.Font = Enum.Font.SourceSansBold
+                    label.TextColor3 = Color3.fromRGB(255, 50, 50)
+                    label.TextSize = 12
+                    billboard.Parent = head
+                else
+                    local label = tag:FindFirstChild("Label")
+                    if label and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        local dist = math.floor((head.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude)
+                        label.Text = char.Name .. "\n[" .. dist .. "m]"
+                    end
+                end
+            else
+                if tag then tag:Destroy() end
+                if highlight then highlight:Destroy() end
+            end
         end
     end
 end)

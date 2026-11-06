@@ -1,0 +1,50 @@
+#include <jni.h>
+#include <android/log.h>
+#include <cmath>
+
+#define TAG "ModMenuCore"
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
+
+// Cấu trúc tọa độ Vector3
+struct Vector3 {
+    float x, y, z;
+};
+
+// Biến cấu hình gia tốc kéo tâm
+float sensitivityMultiplierX = 1.5f;
+float sensitivityMultiplierY = 2.2f; // Tăng hệ số trục Y để hỗ trợ kéo tâm lên đầu nhanh hơn
+bool isAimAssistEnhanced = true;
+
+// Hàm giả lập hook xử lý sự kiện chuyển động cảm ứng (Touch/Drag Event Hook)
+void Hooked_UpdateTouchInput(void* instance, float deltaX, float deltaY) {
+    if (isAimAssistEnhanced) {
+        // Khuếch đại lực kéo theo trục Y khi người chơi thực hiện thao tác vuốt lên
+        if (deltaY < 0.0f) { // Giả định trục Y ngược trong một số engine
+            deltaY *= sensitivityMultiplierY;
+        }
+        deltaX *= sensitivityMultiplierX;
+    }
+
+    // Gọi hàm gốc (Original Function) của game để giữ sự ổn định luồng xử lý
+    // Orig_UpdateTouchInput(instance, deltaX, deltaY);
+}
+
+// Hàm tính toán khoảng cách FOV và tìm tọa độ mục tiêu gần nhất (Aim Lock / Headshot Vector Calculation)
+Vector3 CalculateTargetHeadPosition(Vector3 playerPos, Vector3 enemyPos, bool isHead) {
+    Vector3 target = enemyPos;
+    if (isHead) {
+        // Bổ sung offset chiều cao đầu so với tâm nhân vật (Root/Pelvis to Head offset)
+        target.y += 1.65f; 
+    }
+    return target;
+}
+
+// Khởi tạo Module kiểm thử
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_modmenu_MainActivity_initNativeMod(JNIEnv *env, jobject thiz) {
+    LOGD("Initialized Native Mod Structure for OB Version.");
+    
+    // Tại đây thực hiện các bước:
+    // 1. Quét pattern / Signature scanning để tìm địa chỉ hàm (Offsets)
+    // 2. Thiết lập Inline Hook cho các hàm Input / PlayerController / Camera
+}
